@@ -10,3 +10,6 @@
 
 package ifneeded tdao 0.1.0 [list source [file join $dir tdao.tcl]]
 package ifneeded tdao::dao 0.1.0 [list source [file join $dir dao.tcl]]
+package ifneeded tdao::gdbc 0.1.0 [list source [file join $dir gdbc.tcl]]
+package ifneeded tdao::gdbc::postgres 0.1.0 [list source [file join $dir postgress.tcl]]
+package ifneeded tdao::gdbc::sqlite 0.1.0 [list source [file join $dir sqlite.tcl]]

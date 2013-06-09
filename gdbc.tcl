@@ -17,7 +17,7 @@ namespace eval ::tdao::gdbc {
 	set driver_commands [list open]
 
 	variable conn_commands
-	set conn_commands [list add get mget save delete close]
+	set conn_commands [list insert get mget update delete close]
 
 	variable drivers
 	set drivers [dict create]
@@ -80,9 +80,10 @@ proc ::tdao::gdbc::open {driver conn args} {
 		return -code error "GDBC driver $driver not loaded"
 	}
 
+
 	if {$conn == "#auto"} {
-		set count [expr [dict get $connections -count] + 1]
-		set conn_cmd [format "%s%s" "::tdao::gdbc::conncmd" $count]
+		dict incr connections -count
+		set conn_cmd [format "%s%s" "::tdao::gdbc::conncmd" [dict get $connections -count]]
 	} else {
 		set conn_cmd [_qualify $conn]
 	}
@@ -93,13 +94,12 @@ proc ::tdao::gdbc::open {driver conn args} {
 	
 	set conn [format "%s%s" $conn_cmd "___conn"]
 
-	if {[catch {uplevel 1 [namespace current]::${driver}::open ${conn} $args} result]} {
+	if {[catch {uplevel 1 [namespace current]::${driver}::open $conn $args} result]} {
 		return -code error $result
 	}
 
     uplevel #0 [list interp alias {} $conn_cmd {} [namespace current]::ConnCmd $conn_cmd]
 
-    dict set connections -count $count
     dict set connections $conn_cmd -driver $driver
     dict set connections $conn_cmd -conn $conn
 
@@ -108,14 +108,14 @@ proc ::tdao::gdbc::open {driver conn args} {
 
 proc ::tdao::gdbc::ConnCmd {conn_cmd cmd args} {
 	variable connections
-	variable connection_commands
+	variable conn_commands
 
 	if {![dict exists $connections $conn_cmd]} {
 		return -code error "Connection $conn_cmd does not exist"
 	}
 
-	if {[lsearch $connection_commands $cmd] < 0} {
-		return -code error "Sub command \"$cmd\" is not recognized. Must be [join $connection_commands ,]"
+	if {[lsearch $conn_commands $cmd] < 0} {
+		return -code error "Sub command \"$cmd\" is not recognized. Must be [join $conn_commands ,]"
 	}
 
 	set driver [dict get $connections $conn_cmd -driver]
@@ -131,18 +131,18 @@ proc ::tdao::gdbc::ConnCmd {conn_cmd cmd args} {
 proc ::tdao::gdbc::close {conn_cmd driver conn} {
 	variable connections
 
-	if {[catch {uplevel 1 [namespace current]::${driver}::close $conn $stmt $format} err]} {
+	if {[catch {uplevel 1 [namespace current]::${driver}::close $conn} err]} {
 		return -code error $err
 	}
 
-	if {[dict exists $connctions $conn_cmd]} {
+	if {[dict exists $connections $conn_cmd]} {
 		dict unset connections $conn_cmd
 	}
 }
 
 proc ::tdao::gdbc::get {driver conn schema_name fieldslist condition {format "dict"}} {
 	set stmt [_prepare_select_stmt $schema_name $fieldslist -condition [_prepare_condition $condition]]
-	if {[catch {uplevel 1 [namespace current]::${driver}::get $conn $stmt $format} result]} {
+	if {[catch {uplevel 1 [list [namespace current]::${driver}::get $conn $stmt $format]} result]} {
 		return -code error $result
 	}
 
@@ -151,7 +151,7 @@ proc ::tdao::gdbc::get {driver conn schema_name fieldslist condition {format "di
 
 proc ::tdao::gdbc::mget {driver conn schema_name fieldslist {format "dict"} args} {
 	set stmt [_prepare_select_stmt $schema_name $fieldslist {*}$args]]
-	if {[catch {uplevel 1 [namespace current]::${driver}::get $conn $stmt $format} result]} {
+	if {[catch {uplevel 1 [list [namespace current]::${driver}::get $conn $stmt $format]} result]} {
 		return -code error $result
 	}
 
@@ -159,8 +159,8 @@ proc ::tdao::gdbc::mget {driver conn schema_name fieldslist {format "dict"} args
 }
 
 proc ::tdao::gdbc::insert {driver conn schema_name namevaluepairs {sequence_fields ""}} {
-	set stmt [_prepare_insert_stmt $schema_name $namevaluepairs $sequence_fields]
-	if {[catch {uplevel 1 [namespace current]::${driver}::insert $conn $stmt} result]} {
+	set stmt [_prepare_insert_stmt $schema_name $namevaluepairs]
+	if {[catch {uplevel 1 [list [namespace current]::${driver}::insert $conn $stmt $sequence_fields]} result]} {
 		return -code error $result
 	}
 
@@ -169,7 +169,7 @@ proc ::tdao::gdbc::insert {driver conn schema_name namevaluepairs {sequence_fiel
 
 proc ::tdao::gdbc::update {driver conn schema_name namevaluepairs {condition ""}} {
 	set stmt [_prepare_update_stmt $schema_name $namevaluepairs $condition]
-	if {[catch {uplevel 1 [namespace current]::${driver}::update $conn $stmt} result]} {
+	if {[catch {uplevel 1 [list [namespace current]::${driver}::update $conn $stmt]} result]} {
 		return -code error $result
 	}
 
@@ -178,7 +178,7 @@ proc ::tdao::gdbc::update {driver conn schema_name namevaluepairs {condition ""}
 
 proc ::tdao::gdbc::delete {driver conn schema_name {condition ""}} {
 	set stmt [_prepare_delete_stmt $schema_name $condition]
-	if {[catch {uplevel 1 [namespace current]::${driver}::delete $conn $stmt} result]} {
+	if {[catch {uplevel 1 [list [namespace current]::${driver}::delete $conn $stmt]} result]} {
 		return -code error $result
 	}
 
@@ -186,7 +186,7 @@ proc ::tdao::gdbc::delete {driver conn schema_name {condition ""}} {
 }
 
 proc ::tdao::gdbc::begin {driver conn args} {
-	if {[catch {uplevel 1 [namespace current]::${driver}::begin $conn {*}$args} result]} {
+	if {[catch {uplevel 1 [list [namespace current]::${driver}::begin $conn {*}$args]} result]} {
 		return -code error $result
 	}
 
@@ -194,7 +194,7 @@ proc ::tdao::gdbc::begin {driver conn args} {
 }
 
 proc ::tdao::gdbc::commit {driver conn args} {
-	if {[catch {uplevel 1 [namespace current]::${driver}::commit $conn {*}$args} result]} {
+	if {[catch {uplevel 1 [list [namespace current]::${driver}::commit $conn {*}$args]} result]} {
 		return -code error $result
 	}
 
@@ -202,7 +202,7 @@ proc ::tdao::gdbc::commit {driver conn args} {
 }
 
 proc ::tdao::gdbc::rollback {driver conn args} {
-	if {[catch {uplevel 1 [namespace current]::${driver}::rollback $conn {*}$args} result]} {
+	if {[catch {uplevel 1 [list [namespace current]::${driver}::rollback $conn {*}$args]} result]} {
 		return -code error $result
 	}
 
@@ -299,6 +299,28 @@ proc ::tdao::gdbc::_prepare_condition {conditionlist} {
 
 	set sqlcondition [join $sqlcondition " OR "]
 	return "($sqlcondition)"
+}
+
+proc ::tdao::gdbc::_qualify {item {level 2}} {
+
+    if {![string match "::*" "$item"]} {
+        set ns [uplevel $level [list namespace current]]
+
+        if {![string match "::" "$ns"]} {
+            append ns "::"
+        }
+     
+        set item "$ns${item}"
+    }
+
+    return "$item"
+
+}
+
+namespace eval ::tdao {
+    # Get 'gdbc::gdbc' into the general structure namespace.
+    namespace import -force gdbc::gdbc
+    namespace export gdbc
 }
 
 package provide tdao::gdbc 0.1.0

@@ -98,7 +98,7 @@ proc ::tdao::dao::Define {schema_name fieldslist args} {
 
     uplevel #0 [list interp alias {} $schdefn_cmd {} ::tdao::dao::Create $schdefn_cmd]
 
-    return $defnname
+    return $schdefn_cmd
 }
 
 proc ::tdao::dao::Create {schdefn_cmd inst conn args} {
@@ -251,7 +251,7 @@ proc ::tdao::dao::get {inst conn args} {
 		set fieldslist $args
 	}
 
-	if {[catch {$conn get $schema_name $fieldslist [__get_condition] dict} result]} {
+	if {[catch {$conn get $schema_name $fieldslist [_get_condition] dict} result]} {
 		return -code error $result
 	}
 	if {[llength $result] > 1} {
@@ -275,11 +275,11 @@ proc ::tdao::dao::save {inst conn args} {
 	variable updatelist
 	variable schema_name
 
-	if {$args == ""} {
+	if {$args != ""} {
 		set updatelist $args
 	}
 	
-	if {[catch {$conn update $schema_name [_make_namevaluepairs $updatelist] [__get_condition]} result]} {
+	if {[catch {$conn update $schema_name [_make_namevaluepairs $updatelist] [_get_condition]} result]} {
 		return -code error $result
 	}
 
@@ -290,7 +290,7 @@ proc ::tdao::dao::delete {inst conn args} {
 	variable schema_name
 	variable recordinst
 
-	if {[catch {$conn delete $schema_name [__get_condition]} result]} {
+	if {[catch {$conn delete $schema_name [_get_condition]} result]} {
 		return -code error $result
 	}
 
@@ -306,12 +306,12 @@ proc ::tdao::dao::_get_condition {} {
 	variable uqlist
 
 	set condition [list]
-	set pkcondition [__make_keyvaluepairs $pklist]
+	set pkcondition [_make_keyvaluepairs $pklist]
 	if {$pkcondition != ""} {
 		lappend condition $pkcondition
 	}
 	foreach uq $uqlist {
-		set uqcondition [__make_keyvaluepairs $uq]
+		set uqcondition [_make_keyvaluepairs $uq]
 		if {$uqcondition != ""} {
 			lappend condition $uqcondition
 		}
@@ -350,7 +350,6 @@ proc ::tdao::dao::_make_namevaluepairs {fieldslist} {
 
 	return $namevaluepairs
 }
-
 
 proc ::tdao::dao::_qualify {item {level 2}} {
 

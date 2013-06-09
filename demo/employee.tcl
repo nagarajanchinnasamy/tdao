@@ -1,24 +1,52 @@
-package require tdao::dao
+package require tdao
 namespace import -force tdao::dao::dao
+namespace import -force tdao::gdbc::gdbc
 
-puts [dao define Employee {f1 f2 f3 fn} -primarykey {f1 f2} -autoincrement {f1 f3} -unique {{f1 f3}}]
+puts [dao define Address {
+	id
+	addrline1
+	addrline2
+	city
+	postalcode
+	country
+} -primarykey id -autoincrement id]
 
-#~ proc save_employee {db a1 a2 a3 an} {
-#~ }
-#~ 
-#~ set conn [tdao::conn::sqlite open a1 a2]
+#~ set db [gdbc load sqlite]
+#~ $db open conn [file normalize "sqlite/employee.db"]
+set db [gdbc load postgres]
+$db open employee -user nagu -password Welcome123
 
-puts [set emp [Employee #auto conn]]
+puts [set addr [Address #auto conn]]
 
-puts [Employee emp1 conn]
-puts [emp1 configure -f1 val1 -f2 val2]
-puts [emp1 configure]
-puts [emp1 cget]
-puts [emp1 cget -f1]
+puts [Address addr1 conn]
+puts [addr1 configure \
+	-addrline1 "AddressLine1" \
+	-addrline2 "AddressLine2" \
+	-city "MyCity" \
+	-postalcode "0000000" \
+	-country "India"]
+puts [addr1 configure]
+puts [addr1 cget]
+puts [addr1 add]
+puts [addr1 cget -id]
 
-puts [Employee emp2 conn -f1 val1 -f2 val2]
-puts [emp2 add]
-puts [emp2 get]
-puts [emp2 configure -f1 nval1 -f2 nval2]
-puts [emp2 save]
+puts [Address addr2 conn \
+	-addrline1 "AddressLine1" \
+	-addrline2 "AddressLine2" \
+	-city "MyCity" \
+	-postalcode "0000000" \
+	-country "India"]
+puts [addr2 add]
+puts [addr2 configure \
+	-addrline1 "NewAddressLine1" \
+	-addrline2 "NewAddressLine2" \
+	-city "NewMyCity" \
+	-postalcode "0000000" \
+	-country "India"]
+puts [addr2 save]
 
+Address addr3 conn -id [addr2 cget -id]
+addr3 get
+puts [addr3 cget]
+
+conn close
