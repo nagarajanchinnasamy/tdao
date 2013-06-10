@@ -8,13 +8,16 @@
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
 namespace eval ::tdao::gdbc::sqlite {
+	variable count 0
 }
 
 proc ::tdao::gdbc::sqlite::Load {} {
 	package require sqlite3
 }
 
-proc ::tdao::gdbc::sqlite::open {conn location {initscript ""}} {
+proc ::tdao::gdbc::sqlite::open {location {initscript ""}} {
+	incr count
+	set conn [format "%s%s%s" [namespace current] "___conn" $count]
 	if {[catch {sqlite3 $conn $location} err]} {
 		return -code error $err
 	}

@@ -72,7 +72,7 @@ proc ::tdao::gdbc::DriverCmd {driver cmd args} {
 	return [uplevel 1 [namespace current]::${cmd} $driver $args]
 }
 
-proc ::tdao::gdbc::open {driver conn args} {
+proc ::tdao::gdbc::open {driver args} {
 	variable drivers
 	variable connections
 
@@ -81,22 +81,14 @@ proc ::tdao::gdbc::open {driver conn args} {
 	}
 
 
-	if {$conn == "#auto"} {
-		dict incr connections -count
-		set conn_cmd [format "%s%s" "::tdao::gdbc::conncmd" [dict get $connections -count]]
-	} else {
-		set conn_cmd [_qualify $conn]
-	}
+	dict incr connections -count
+	set conn_cmd [format "%s%s" "::tdao::gdbc::conncmd" [dict get $connections -count]]
 
-	if {[dict exists $connections $conn_cmd]} {
-		return -code error "Connection $conn is already open"
-	}
-	
-	set conn [format "%s%s" $conn_cmd "___conn"]
 
-	if {[catch {uplevel 1 [namespace current]::${driver}::open $conn $args} result]} {
+	if {[catch {uplevel 1 [namespace current]::${driver}::open $args} result]} {
 		return -code error $result
 	}
+	set conn $result
 
     uplevel #0 [list interp alias {} $conn_cmd {} [namespace current]::ConnCmd $conn_cmd]
 
