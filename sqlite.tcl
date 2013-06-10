@@ -7,15 +7,15 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-namespace eval ::tdao::gdbc::sqlite {
+namespace eval ::tdao::dbc::sqlite {
 	variable count 0
 }
 
-proc ::tdao::gdbc::sqlite::Load {} {
+proc ::tdao::dbc::sqlite::Load {} {
 	package require sqlite3
 }
 
-proc ::tdao::gdbc::sqlite::open {location {initscript ""}} {
+proc ::tdao::dbc::sqlite::open {location {initscript ""}} {
 	incr count
 	set conn [format "%s%s%s" [namespace current] "___conn" $count]
 	if {[catch {sqlite3 $conn $location} err]} {
@@ -29,11 +29,11 @@ proc ::tdao::gdbc::sqlite::open {location {initscript ""}} {
 	return $conn
 }
 
-proc ::tdao::gdbc::sqlite::close {conn} {
+proc ::tdao::dbc::sqlite::close {conn} {
 	catch {$conn close}
 }
 
-proc ::tdao::gdbc::sqlite::get {conn stmt {format "dict"}} {
+proc ::tdao::dbc::sqlite::get {conn stmt fieldslist {format "dict"}} {
 	set recordslist ""
 	switch -- $format {
 		dict {
@@ -65,7 +65,7 @@ proc ::tdao::gdbc::sqlite::get {conn stmt {format "dict"}} {
 	return $recordslist
 }
 
-proc ::tdao::gdbc::sqlite::insert {conn stmt {sequence_fields ""}} {
+proc ::tdao::dbc::sqlite::insert {conn stmt {sequence_fields ""}} {
 	if {[catch {$conn eval $stmt} result]} {
 		return -code error $result
 	}
@@ -84,7 +84,7 @@ proc ::tdao::gdbc::sqlite::insert {conn stmt {sequence_fields ""}} {
 	return [list $status $sequence_values]
 }
 
-proc ::tdao::gdbc::sqlite::update {conn stmt} {
+proc ::tdao::dbc::sqlite::update {conn stmt} {
 	if {[catch {$conn eval $stmt} err]} {
 		return -code error $err
 	}
@@ -92,7 +92,7 @@ proc ::tdao::gdbc::sqlite::update {conn stmt} {
 	return [$conn changes]
 }
 
-proc ::tdao::gdbc::sqlite::delete {conn stmt} {
+proc ::tdao::dbc::sqlite::delete {conn stmt} {
 	if {[catch {$conn eval $stmt} err]} {
 		return -code error $err
 	}
@@ -100,16 +100,16 @@ proc ::tdao::gdbc::sqlite::delete {conn stmt} {
 	return [$conn changes]
 }
 
-proc ::tdao::gdbc::sqlite::begin {conn {lock deferred}} {
+proc ::tdao::dbc::sqlite::begin {conn {lock deferred}} {
 	$conn eval begin $lock
 }
 
-proc ::tdao::gdbc::sqlite::commit {conn} {
+proc ::tdao::dbc::sqlite::commit {conn} {
 	$conn eval commit
 }
 
-proc ::tdao::gdbc::sqlite::rollback {conn} {
+proc ::tdao::dbc::sqlite::rollback {conn} {
 	$conn eval rollback
 }
 
-package provide tdao::gdbc::sqlite 0.1.0
+package provide tdao::dbc::sqlite 0.1.0

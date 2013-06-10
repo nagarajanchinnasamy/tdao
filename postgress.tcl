@@ -1,4 +1,4 @@
-# PostgresSQL.tcl --
+# postgres.tcl --
 #
 # PostgresSQL connectivity module.
 #
@@ -7,14 +7,14 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-namespace eval ::tdao::gdbc::postgres {
+namespace eval ::tdao::dbc::postgres {
 }
 
-proc ::tdao::gdbc::postgres::Load {} {
+proc ::tdao::dbc::postgres::Load {} {
 	package require Pgtcl
 }
 
-proc ::tdao::gdbc::postgres::open {dbname args} {
+proc ::tdao::dbc::postgres::open {dbname args} {
 	if {[catch {pg_connect $dbname {*}$args} result]} {
 		return -code error $result
 	}
@@ -22,11 +22,11 @@ proc ::tdao::gdbc::postgres::open {dbname args} {
 	return $result
 }
 
-proc ::tdao::gdbc::postgres::close {conn} {
+proc ::tdao::dbc::postgres::close {conn} {
 	catch {pg_disconnect $conn}
 }
 
-proc ::tdao::gdbc::postgres::get {conn stmt {format "dict"}} {
+proc ::tdao::dbc::postgres::get {conn stmt fieldslist {format "dict"}} {
 	if {[catch {pg_exec $conn $stmt} result]} {
 		return -code error $result
 	}
@@ -46,7 +46,7 @@ proc ::tdao::gdbc::postgres::get {conn stmt {format "dict"}} {
 	return $recordslist
 }
 
-proc ::tdao::gdbc::postgres::insert {conn stmt {sequence_fields ""}} {
+proc ::tdao::dbc::postgres::insert {conn stmt {sequence_fields ""}} {
 	if {[catch {pg_exec $conn $stmt} result]} {
 		return -code error $result
 	}
@@ -70,7 +70,7 @@ proc ::tdao::gdbc::postgres::insert {conn stmt {sequence_fields ""}} {
 	return 1
 }
 
-proc ::tdao::gdbc::postgres::update {conn stmt} {
+proc ::tdao::dbc::postgres::update {conn stmt} {
 	if {[catch {pg_exec $conn $stmt} result]} {
 		return -code error $result
 	}
@@ -80,7 +80,7 @@ proc ::tdao::gdbc::postgres::update {conn stmt} {
 	return $changes
 }
 
-proc ::tdao::gdbc::postgres::delete {conn stmt} {
+proc ::tdao::dbc::postgres::delete {conn stmt} {
 	if {[catch {pg_exec $conn $stmt} result]} {
 		return -code error $result
 	}
@@ -90,25 +90,25 @@ proc ::tdao::gdbc::postgres::delete {conn stmt} {
 	return $changes
 }
 
-proc ::tdao::gdbc::postgres::begin {conn {lock deferrable}} {
+proc ::tdao::dbc::postgres::begin {conn {lock deferrable}} {
 	if {[catch {pg_exec $conn "begin $lock"} result]} {
 		return -code error $result
 	}
 	pg_result $result -clear
 }
 
-proc ::tdao::gdbc::postgres::commit {conn} {
+proc ::tdao::dbc::postgres::commit {conn} {
 	if {[catch {pg_exec $conn commit} result]} {
 		return -code error $result
 	}
 	pg_result $result -clear
 }
 
-proc ::tdao::gdbc::postgres::rollback {conn} {
+proc ::tdao::dbc::postgres::rollback {conn} {
 	if {[catch {pg_exec $conn rollback} result]} {
 		return -code error $result
 	}
 	pg_result $result -clear
 }
 
-package provide tdao::gdbc::postgres 0.1.0
+package provide tdao::dbc::postgres 0.1.0

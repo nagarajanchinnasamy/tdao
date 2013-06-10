@@ -3,6 +3,7 @@ package require struct::record 1.2.1
 namespace eval ::tdao {}
 
 namespace eval ::tdao::dao {
+	variable undefined "<<dao-undefined>>"
 	variable commands
 	set commands [list define delete exists show]
 
@@ -16,7 +17,7 @@ namespace eval ::tdao::dao {
 	set instances [dict create]
 
 	variable schema_name
-	variable fieldslist
+	variable flist
 	variable sqlist
 	variable pklist
 	variable uqlist
@@ -38,22 +39,41 @@ proc ::tdao::dao::dao {cmd args} {
     return [uplevel 1 ::tdao::dao::${cmd} $args]
 }
 
-proc ::tdao::dao::Define {schema_name fieldslist args} {
+proc ::tdao::dao::Define {schdefn_cmd schema_name fieldslist args} {
 	variable schemadefn
-	
-	set schdefn_cmd [_qualify $schema_name]
+	variable undefined
+
+	set schdefn_cmd [_qualify $schdefn_cmd]
 	if {[dict exists $schemadefn $schdefn_cmd]} {
-		return -code error "A definition of schema $schema_name already exists"
+		return -code error "Definition command $schdefn_cmd already exists"
 	}
 
-	set recdefn_cmd [format "%s%s" $schdefn_cmd "_record"]
-	if {[catch {uplevel 1 [list struct::record define $recdefn_cmd $fieldslist]} recdefn_cmd]} {
-		return -code error $recdefn_cmd
-	}
-
+	set flist [list]
 	set sqlist [list]
 	set pklist [list]
 	set uqlist [list]
+
+	set recflist [list]
+	foreach f $fieldslist {
+		lassign $f n v
+		lappend flist $n
+		switch -- [llength $f] {
+			1 {
+				lappend recflist [list $n $undefined]
+			}
+			2 {
+				lappend recflist $f
+			}
+			default {
+				return -code error "Unsupported nested definition found in $schdefn_cmd."
+			}
+		}
+	}
+
+	set recdefn_cmd [format "%s%s" $schdefn_cmd "_record"]
+	if {[catch {uplevel 1 [list struct::record define $recdefn_cmd $recflist]} recdefn_cmd]} {
+		return -code error $recdefn_cmd
+	}
 
 	foreach {opt val} $args {
 		switch -- $opt {
@@ -73,23 +93,23 @@ proc ::tdao::dao::Define {schema_name fieldslist args} {
 	}
 
 	set insertlist [list]
-	foreach fname $fieldslist {
+	foreach fname $flist {
 		if {[lsearch -exact $sqlist $fname] < 0} {
 			lappend insertlist $fname
 		}
 	}
 
 	set updatelist ""
-	foreach fname $fieldslist {
+	foreach fname $flist {
 		if {[lsearch -exact $pklist $fname] < 0 && [lsearch -exact $sqlist $fname] < 0} {
 			lappend updatelist $fname
 		}
 	}
 
+	dict set schemadefn $schdefn_cmd -count 0
 	dict set schemadefn $schdefn_cmd -schema_name $schema_name
 	dict set schemadefn $schdefn_cmd -recdefn_cmd $recdefn_cmd
-	dict set schemadefn $schdefn_cmd -fieldslist $fieldslist
-	dict set schemadefn $schdefn_cmd -count 0
+	dict set schemadefn $schdefn_cmd -flist $flist
 	dict set schemadefn $schdefn_cmd -sqlist $sqlist
 	dict set schemadefn $schdefn_cmd -pklist $pklist
 	dict set schemadefn $schdefn_cmd -uqlist $uqlist
@@ -145,7 +165,7 @@ proc ::tdao::dao::Cmd {inst conn cmd args} {
     variable instcommands
 
 	variable schema_name
-	variable fieldslist
+	variable flist
 	variable sqlist
 	variable pklist
 	variable uqlist
@@ -166,7 +186,7 @@ proc ::tdao::dao::Cmd {inst conn cmd args} {
 
 	dict update schdefn \
 		-schema_name schema_name \
-		-fieldslist fieldslist \
+		-flist flist \
 		-sqlist sqlist \
 		-pklist pklist \
 		-uqlist uqlist \
@@ -209,7 +229,22 @@ proc ::tdao::dao::cget {inst args} {
 }
 
 proc ::tdao::dao::reset {inst args} {
+	variable instances
+	variable schemadefn
+	variable recordinst
+	
+	set schdefn_cmd [dict get $instances $inst -schdefn_cmd]
+	set recdefn_cmd [dict get $schemadefn $schdefn_cmd -recdefn_cmd]
+
+	set config [list]
+	foreach m [struct::record show members $recdefn_cmd] {
+		lassign $m n v
+		lappend config -$n $v
+	}
+
+	uplevel 1 $recordinst configure $config
 }
+
 
 proc ::tdao::dao::add {inst conn args} {
 	variable insertlist
@@ -243,15 +278,15 @@ proc ::tdao::dao::add {inst conn args} {
 }
 
 proc ::tdao::dao::get {inst conn args} {
-	variable fieldslist
+	variable flist
 	variable schema_name
 	variable recordinst
 
 	if {$args != ""} {
-		set fieldslist $args
+		set flist $args
 	}
 
-	if {[catch {$conn get $schema_name $fieldslist [_get_condition] dict} result]} {
+	if {[catch {$conn get $schema_name $flist [_get_condition] dict} result]} {
 		return -code error $result
 	}
 	if {[llength $result] > 1} {
@@ -321,11 +356,12 @@ proc ::tdao::dao::_get_condition {} {
 
 proc ::tdao::dao::_make_keyvaluepairs {fieldslist} {
 	variable recordinst
+	variable undefined
 
 	set keyslist [list]
 	if [llength $fieldslist] {
 		foreach field $fieldslist {
-			if {[set val [$recordinst cget -$field]] == ""} {
+			if {[set val [$recordinst cget -$field]] == $undefined} {
 				return ""
 			}
 			lappend keyslist $field $val
@@ -338,11 +374,12 @@ proc ::tdao::dao::_make_keyvaluepairs {fieldslist} {
 
 proc ::tdao::dao::_make_namevaluepairs {fieldslist} {
 	variable recordinst
+	variable undefined
 
 	set namevaluepairs [list]
 	if [llength $fieldslist] {
 		foreach field $fieldslist {
-			if {[set val [$recordinst cget -$field]] != ""} {
+			if {[set val [$recordinst cget -$field]] != $undefined} {
 				lappend namevaluepairs $field $val
 			}
 		}
