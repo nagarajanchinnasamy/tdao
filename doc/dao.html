@@ -1,0 +1,500 @@
+
+<html><head>
+<title>tdao - Tcl Data Access Objects</title>
+<style type="text/css"><!--
+    HTML {
+	background: 	#FFFFFF;
+	color: 		black;
+    }
+    BODY {
+	background: 	#FFFFFF;
+	color:	 	black;
+    }
+    DIV.doctools {
+	margin-left:	10%;
+	margin-right:	10%;
+    }
+    DIV.doctools H1,DIV.doctools H2 {
+	margin-left:	-5%;
+    }
+    H1, H2, H3, H4 {
+	margin-top: 	1em;
+	font-family:	sans-serif;
+	font-size:	large;
+	color:		#005A9C;
+	background: 	transparent;
+	text-align:		left;
+    }
+    H1.title {
+	text-align: center;
+    }
+    UL,OL {
+	margin-right: 0em;
+	margin-top: 3pt;
+	margin-bottom: 3pt;
+    }
+    UL LI {
+	list-style: disc;
+    }
+    OL LI {
+	list-style: decimal;
+    }
+    DT {
+	padding-top: 	1ex;
+    }
+    UL.toc,UL.toc UL, UL.toc UL UL {
+	font:		normal 12pt/14pt sans-serif;
+	list-style:	none;
+    }
+    LI.section, LI.subsection {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding: 	0em;
+    }
+    PRE {
+	display: 	block;
+	font-family:	monospace;
+	white-space:	pre;
+	margin:		0%;
+	padding-top:	0.5ex;
+	padding-bottom:	0.5ex;
+	padding-left:	1ex;
+	padding-right:	1ex;
+	width:		100%;
+    }
+    PRE.example {
+	color: 		black;
+	background: 	#f5dcb3;
+	border:		1px solid black;
+    }
+    UL.requirements LI, UL.syntax LI {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding:	0em;
+    }
+    DIV.synopsis {
+	color: 		black;
+	background: 	#80ffff;
+	border:		1px solid black;
+	font-family:	serif;
+	margin-top: 	1em;
+	margin-bottom: 	1em;
+    }
+    UL.syntax {
+	margin-top: 	1em;
+	border-top:	1px solid black;
+    }
+    UL.requirements {
+	margin-bottom: 	1em;
+	border-bottom:	1px solid black;
+    }
+--></style>
+</head>
+<! -- Generated from file 'dao.man' by tcllib/doctools with format 'html'
+   -->
+<! -- Copyright &copy; 2013, Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;
+   -->
+<! -- CVS: $Id$ tdao.n
+   -->
+<body><div class="doctools">
+<h1 class="title">tdao(n) 0.1.0  &quot;Tcl Data Access Objects&quot;</h1>
+<div id="name" class="section"><h2><a name="name">Name</a></h2>
+<p>tdao - Define and create Data Access Objects</p>
+</div>
+<div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
+<ul class="toc">
+<li class="section"><a href="#toc">Table Of Contents</a></li>
+<li class="section"><a href="#synopsis">Synopsis</a></li>
+<li class="section"><a href="#section1">Description</a></li>
+<li class="section"><a href="#section2">DAO DEFINITION COMMAND</a></li>
+<li class="section"><a href="#section3">DAO INSTANCE COMMANDS</a></li>
+<li class="section"><a href="#section4">Object To Database Record Mapping</a></li>
+<li class="section"><a href="#section5">EXAMPLES</a></li>
+<li class="section"><a href="#section6">See Also</a></li>
+<li class="section"><a href="#section7">AUTHOR</a></li>
+<li class="section"><a href="#section8">BUGS, IDEAS, FEEDBACK</a></li>
+<li class="section"><a href="#keywords">Keywords</a></li>
+<li class="section"><a href="#category">Category</a></li>
+<li class="section"><a href="#copyright">Copyright</a></li>
+</ul>
+</div>
+<div id="synopsis" class="section"><h2><a name="synopsis">Synopsis</a></h2>
+<div class="synopsis">
+<ul class="requirements">
+<li>package require <b class="pkgname">Tcl 8.5</b></li>
+<li>package require <b class="pkgname">tdao <span class="opt">?0.1.0?</span></b></li>
+</ul>
+<ul class="syntax">
+<li><a href="#1"><b class="cmd">dao define</b> <i class="arg">definitionName</i> <i class="arg">schemaName</i> <i class="arg">schemaFields</i> <span class="opt">?<i class="arg">-primarykey  fieldsList</i>?</span> <span class="opt">?<i class="arg">-autoincrement fieldsList</i>?</span> <span class="opt">?<i class="arg">-unique fieldsListOfLists</i>?</span></a></li>
+<li><a href="#2"><b class="cmd">dao show</b> <i class="arg">definitions</i></a></li>
+<li><a href="#3"><b class="cmd">dao show</b> <i class="arg">instances</i> <i class="arg">definitionName</i></a></li>
+<li><a href="#4"><b class="cmd">dao show</b> <i class="arg">fields</i> <i class="arg">definitionName</i></a></li>
+<li><a href="#5"><b class="cmd">dao show</b> <i class="arg">values</i> <i class="arg">instanceName</i></a></li>
+<li><a href="#6"><b class="cmd">dao exists</b> <i class="arg">definition</i> <i class="arg">definitionName</i></a></li>
+<li><a href="#7"><b class="cmd">dao exists</b> <i class="arg">instance</i> <i class="arg">instanceName</i></a></li>
+<li><a href="#8"><b class="cmd">dao delete</b> <i class="arg">definition</i> <i class="arg">definitionName</i></a></li>
+<li><a href="#9"><b class="cmd">dao delete</b> <i class="arg">instance</i> <i class="arg">instanceName</i></a></li>
+<li><a href="#10"><i class="arg">definitionName</i> <b class="method"><i class="arg">instanceName|#auto</i></b> <b class="method"><i class="arg">connectionName</i></b> <span class="opt">?<i class="arg">-field1 val1</i>?</span> <span class="opt">?<i class="arg">-field2 val2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
+<li><a href="#11"><i class="arg">instanceName</i> <b class="method">cget</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
+<li><a href="#12"><i class="arg">instanceName</i> <b class="method">configure</b> <span class="opt">?<i class="arg">-field1 val1</i>?</span> <span class="opt">?<i class="arg">-field2 val2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
+<li><a href="#13"><i class="arg">instanceName</i> <b class="method">reset</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
+<li><a href="#14"><i class="arg">instanceName</i> <b class="method">add</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
+<li><a href="#15"><i class="arg">instanceName</i> <b class="method">get</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
+<li><a href="#16"><i class="arg">instanceName</i> <b class="method">save</b></a></li>
+<li><a href="#17"><i class="arg">instanceName</i> <b class="method">delete</b></a></li>
+</ul>
+</div>
+</div>
+<div id="section1" class="section"><h2><a name="section1">Description</a></h2>
+<p><b class="cmd">tdao::dao</b> is a sub-package of <b class="cmd">tdao</b> package that provides
+methods to <b class="method">define</b> the schema of a table/view in a DAO
+definition and create and manipulate DAO instances. The interface
+provided by <b class="cmd">tdao::dao</b> package is very similar to
+<b class="cmd">struct::record</b> package. It just adds additional methods (
+<b class="method">add</b>, <b class="method">get</b>, <b class="method">save</b> and <b class="method">delete</b>) to
+<b class="cmd">struct::record</b> package to manipulate records of a table/view.</p>
+<p>Each DAO definition creates an object that encompasses that definition.
+Subsequently, using the definition object one can create DAO instances
+of that definition. These instances can then be manipulated with the
+<b class="method">cget</b>, <b class="method">configure</b>, <b class="method">reset</b> <b class="method">add</b>,
+<b class="method">get</b>, <b class="method">save</b> and <b class="method">delete</b> methods.</p>
+<p>With every DAO instance, <b class="method"><i class="arg">connectionName</i></b> needs to be
+associated to enable the instance to communicate with the database when
+data manipulation methods <b class="method">add</b>, <b class="method">get</b>, <b class="method">save</b> and
+<b class="method">delete</b> are invoked. This <b class="method"><i class="arg">connectionName</i></b> can be
+obtained using <b class="method">open</b> method of <b class="cmd">::tdao::dbc</b> package.</p>
+<p>The <b class="cmd">tdao::dao</b> package only contains one top level command, but
+several sub commands (see below). It also obeys the namespace in which
+the DAO was defined, hence the objects returned are fully qualified.</p>
+<dl class="definitions">
+<dt><a name="1"><b class="cmd">dao define</b> <i class="arg">definitionName</i> <i class="arg">schemaName</i> <i class="arg">schemaFields</i> <span class="opt">?<i class="arg">-primarykey  fieldsList</i>?</span> <span class="opt">?<i class="arg">-autoincrement fieldsList</i>?</span> <span class="opt">?<i class="arg">-unique fieldsListOfLists</i>?</span></a></dt>
+<dd><p>Defines a DAO. <i class="arg">definitionName</i> is the name of the DAO definition,
+and is also used as an object command. This object command is used to
+create DAO instances. <i class="arg">schemaName</i> is the name of the table/view
+that this DAO defines. <i class="arg">schemaFields</i> are the field names of the
+schema that make up the DAO definition. Optional arguments
+<span class="opt">?<i class="arg">-primarykey  fieldsList</i>?</span> 
+<span class="opt">?<i class="arg">-autoincrement fieldsList</i>?</span>
+<span class="opt">?<i class="arg">-unique fieldsListOfLists</i>?</span> are used to include further
+details of the schema into DAO definition.</p>
+<p>A DAO definition contains a list of field names, where each field name
+represents a column name in a table/view. A field can optionally have a
+default initial value. When a default value is given, the field is
+specified as a list having its name and value as elements. If no
+default initial value is given, then the value is automatically set to
+<b class="const">&lt;&lt;dao-undefined&gt;&gt;</b> by the <b class="method">dao define</b> method. For
+example, a DAO definition of address table would look like this:</p>
+<pre class="example">
+# this is a DAO definition with name Address for table address
+dao define Address address {
+    addrline1
+    addrline2
+    {city Bangalore}
+    {postalcode 560001}
+    {country India}
+}
+</pre>
+<p>All instances created from this DAO definition, will initially have 
+Bangalore, 560001 and India as the value for <i class="arg">city</i>,
+<i class="arg">postalcode</i> and <i class="arg">country</i> respectively. <i class="arg">addrline1</i> and
+<i class="arg">addrline2</i> will have internally set value of
+<b class="const">&lt;&lt;dao-undefined&gt;&gt;</b></p></dd>
+<dt><a name="2"><b class="cmd">dao show</b> <i class="arg">definitions</i></a></dt>
+<dd><p>Returns a list of DAO definitionNames that have been defined.</p></dd>
+<dt><a name="3"><b class="cmd">dao show</b> <i class="arg">instances</i> <i class="arg">definitionName</i></a></dt>
+<dd><p>Returns the instances that have been instantiated by
+<i class="arg">definitionName</i>.</p></dd>
+<dt><a name="4"><b class="cmd">dao show</b> <i class="arg">fields</i> <i class="arg">definitionName</i></a></dt>
+<dd><p>Returns the field names that are defined by <i class="arg">definitionName</i>. It
+returns the same format as how the DAOs were defined.</p></dd>
+<dt><a name="5"><b class="cmd">dao show</b> <i class="arg">values</i> <i class="arg">instanceName</i></a></dt>
+<dd><p>Returns a list of values that are set for the instance
+<i class="arg">instanceName</i>. The output is a list of key/value pairs.</p></dd>
+<dt><a name="6"><b class="cmd">dao exists</b> <i class="arg">definition</i> <i class="arg">definitionName</i></a></dt>
+<dd><p>Returns 1 if a DAO <i class="arg">definition</i> with the name <i class="arg">definitionName</i>
+exists, else returns 0.</p></dd>
+<dt><a name="7"><b class="cmd">dao exists</b> <i class="arg">instance</i> <i class="arg">instanceName</i></a></dt>
+<dd><p>Returns 1 if a DAO <i class="arg">instance</i> with the name <i class="arg">instanceName</i>
+exists, else returns 0</p></dd>
+<dt><a name="8"><b class="cmd">dao delete</b> <i class="arg">definition</i> <i class="arg">definitionName</i></a></dt>
+<dd><p>Deletes DAO definition <i class="arg">definitionName</i>, and all instances of
+<i class="arg">definitionName</i>. It returns an error if the <i class="arg">definitionName</i>
+does not exist.</p></dd>
+<dt><a name="9"><b class="cmd">dao delete</b> <i class="arg">instance</i> <i class="arg">instanceName</i></a></dt>
+<dd><p>Deletes DAO <i class="arg">instance</i> with the name of <i class="arg">instanceName</i>. It
+returns an error if the <i class="arg">instanceName</i> does not exist.</p></dd>
+</dl>
+</div>
+<div id="section2" class="section"><h2><a name="section2">DAO DEFINITION COMMAND</a></h2>
+<dl class="definitions">
+<dt><a name="10"><i class="arg">definitionName</i> <b class="method"><i class="arg">instanceName|#auto</i></b> <b class="method"><i class="arg">connectionName</i></b> <span class="opt">?<i class="arg">-field1 val1</i>?</span> <span class="opt">?<i class="arg">-field2 val2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></dt>
+<dd><p>Using the <i class="arg">definitionName</i> command that was created from the DAO
+definition, instances of the DAO definition can be created. Once an
+instance is created, then it contains the fields of the DAO definition,
+very similar to how objects work. During instance generation, an object
+command for the instance is created as well, using <i class="arg">instanceName</i>.
+This instance object command is used to access the data members of the
+instance. During the instantiation, values for that instance can be
+given in key/value pairs.</p>
+<p>With every DAO instance, <b class="method"><i class="arg">connectionName</i></b> needs to be
+associated to enable the instance to communicate with the database when
+data manipulation methods <b class="method">add</b>, <b class="method">get</b>, <b class="method">save</b> and
+<b class="method">delete</b> are invoked. This <b class="method"><i class="arg">connectionName</i></b> can be
+obtained using <b class="method">open</b> method of <b class="cmd">::tdao::dbc</b> package.</p>
+<p>Optionally, <i class="arg">#auto</i> can be used in place of <i class="arg">instanceName</i>.
+When #auto is used, then an instance name will automatically be
+generated, of the form definitionName&lt;integer&gt;, where &lt;integer&gt; is a
+unique integer (starting at 0) that is generated.</p>
+<pre class="example">
+# create an object instance addr1 with default values
+Address addr1 conn
+</pre>
+<pre class="example">
+# create an object instance addr2 with assigned values
+Address addr2 conn -city Chennai -postalcode 638001
+</pre>
+</dd>
+</dl>
+</div>
+<div id="section3" class="section"><h2><a name="section3">DAO INSTANCE COMMANDS</a></h2>
+<p>The following subcommands and corresponding arguments are available to
+any DAO instance command:</p>
+<dl class="definitions">
+ 
+<dt><a name="11"><i class="arg">instanceName</i> <b class="method">cget</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></dt>
+<dd><p>Each instance has the sub command <b class="method">cget</b> associated with it. This
+is very similar to how Tk widget's cget command works. It queries
+the values of the field for that particular instance. If
+no arguments are given, then a key/value list is returned.</p>
+<p>To get a value of a field, there are several ways to do this.</p>
+<ol class="enumerated">
+<li><p>To get a field's value, use the instance built-in <b class="method">cget</b> method:</p>
+<pre class="example">
+    <i class="arg">addr1</i> <b class="method">cget</b> -city
+</pre>
+</li>
+<li><p>To get multiple field values, you can specify them all in one command:</p>
+<pre class="example">
+    <i class="arg">addr1</i> <b class="method">cget</b> -addrline1 -addrline2
+</pre>
+</li>
+<li><p>To get a list of the key/value of all of the members, there are 3 ways:</p>
+<pre class="example">
+    <i class="arg">addr1</i>
+    <i class="arg">addr1</i> <b class="method">cget</b>
+    <i class="arg">addr1</i> <b class="method">configure</b>
+</pre>
+</li>
+</ol></dd>
+<dt><a name="12"><i class="arg">instanceName</i> <b class="method">configure</b> <span class="opt">?<i class="arg">-field1 val1</i>?</span> <span class="opt">?<i class="arg">-field2 val2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></dt>
+<dd><p>Each instance has the sub command <b class="method">configure</b> associated with it. This
+is very similar to how Tk widget's configure command works. It sets
+the values of the particular field for that particular instance. If
+no arguments are given, then a key/value list is returned.</p></dd>
+<dt><a name="13"><i class="arg">instanceName</i> <b class="method">reset</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></dt>
+<dd><p>Each instance has the sub command <b class="method">reset</b> associated with it. It
+sets the values of the particular field to it's initial default value
+given in the correponding DAO definition. Fields that were not given
+default initial value are given a value of <b class="const">&lt;&lt;dao-undefined&gt;&gt;</b>.
+If no arguments are given, then value of all the fields are reset.</p>
+<p>To set a value of a field, there are several ways to do this.</p>
+<ol class="enumerated">
+<li><p>To set a field value:</p>
+<pre class="example">
+    <i class="arg">addr1</i> <b class="method">configure</b> -addrline1 val1
+</pre>
+</li>
+<li><p>To set multiple field values, you can specify them all in one command:</p>
+<pre class="example">
+    <i class="arg">addr1</i> <b class="method">configure</b> -addrline1 va1 -addrline2 val2
+</pre>
+</li>
+<li><p>To reset all the field values as per the DAO definition:</p>
+<pre class="example">
+    <i class="arg">addr1</i> <b class="method">reset</b>
+</pre>
+</li>
+</ol></dd>
+<dt><a name="14"><i class="arg">instanceName</i> <b class="method">add</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></dt>
+<dd><p>Each instance has the sub command <b class="method">add</b> associated with it. It 
+inserts the object as a new record into database. In preparing the
+record to insert, this method prepares a list of name-value pairs,
+by default, from all the fields of the object. However, if the optional
+arguments are passed, it uses only those field names in the arguments
+in preparing the name-value pairs. While preparing the name-value
+pairs, it includes only those fields that are initialized with a value
+other than &lt;&lt;dao-undefined&gt;&gt;. Instead of an empty string, we make use
+of this state of a field to indicate the absense of a field in the
+insert operation (thus resulting in NULL or default value in the
+database). Upon successful completion of add operation, the new values
+of sequence / auto-incremented fields are populated back into the
+object.</p>
+<p>Returns the status of add operation as a numerical value. A value
+greater than zero indicates success.</p></dd>
+<dt><a name="15"><i class="arg">instanceName</i> <b class="method">get</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></dt>
+<dd><p>Each instance has the sub command <b class="method">get</b> associated with it. It
+retrieves a unique record from the database and populates DAO instance
+fields. The process of preparing the condition needed to identify the
+unique record from the field values of a DAO instance is explained in
+section Object To Database Record Mapping. By default, this method
+retrieves the values for all the fields of the object. However, if the
+optional arguments are passed, it retrieves only those fields in the
+arguments.</p>
+<p>Returns fieldname-value pairs retrieved from database as a Tcl 
+dictionary. If the retrieval does not return any record from database,
+then the result will be an empty string.</p></dd>
+<dt><a name="16"><i class="arg">instanceName</i> <b class="method">save</b></a></dt>
+<dd><p>Each instance has the sub command <b class="method">save</b> associated with it. It
+saves the object by updating the corresponding record into the
+database. The process of preparing the condition needed to identify the
+unique record from the field values of a DAO instance is explained in
+section Object To Database Record Mapping. In preparing the
+record to updte, this method prepares a list of name-value pairs,
+by default, from all the fields of the object. However, if the optional
+arguments are passed, it uses only those field names in the arguments
+to prepare the name-value pairs. While preparing the name-value
+pairs, it includes only those fields that are initialized with a value
+other than &lt;&lt;dao-undefined&gt;&gt;. Instead of an empty string, we make use
+of this state of a field to indicate the absense of a field in the
+update operation (thus not affecting those fields in the database).</p>
+<p>Returns the status of save operation as a numerical value. A value
+greater than zero indicates success.</p></dd>
+<dt><a name="17"><i class="arg">instanceName</i> <b class="method">delete</b></a></dt>
+<dd><p>Each instance has the sub command <b class="method">delete</b> associated with it.
+It deletes the record from database represented by the object and
+resets the object values. The unique record to be deleted from the
+database is identified based on the description provided in Object To
+Database Record Mapping.</p>
+<p>Returns the status of delete operation as a numerical value. A value
+greater than zero indicates success.</p></dd>
+</dl>
+</div>
+<div id="section4" class="section"><h2><a name="section4">Object To Database Record Mapping</a></h2>
+<p>Methods <b class="method">get</b>, <b class="method">save</b> and <b class="method">delete</b> need to
+identify a unique record in the database that the DAO instance
+represents. A unique record is identified by the values of primary key
+and/or unique fields of the object. These field names are provided in
+DAO definition using optional arguments -primarykey, -unique and
+-autoincrement options.</p>
+<p>For e.g., if the primary key was defined as {pk1 pk2} and unique fields
+were defined as {{uq1} {uq2 uq3}} then the condition to be used in
+WHERE clause of SQL statement to identify the unique record will be:</p>
+<pre class="example">
+((pk1='pk1value' AND pk2='pk2vaue') OR (uq1='uq1value') OR (uq2='uq2value' AND uq3='uq3value'))
+</pre>
+<p>If any of the fields listed as part of primary key or unique fields are
+uninitialized (i.e., having the value &lt;&lt;dao-undefined&gt;&gt;), then those
+fields are not included in the condition. For e.g., if pk1 is
+uninitialized, then the condition will be:</p>
+<pre class="example">
+((uq1='uq1value') OR (uq2='uq2value' AND uq3='uq3value'))
+</pre>
+<p>Or, for e.g., if uq2 is uninitialized, then the condition will be:</p>
+<pre class="example">
+((pk1='pk1value' AND pk2='pk2vaue') OR (uq1='uq1value')).
+</pre>
+<p>Or, for e.g., if uq1 is uninitialized, then the condition will be:</p>
+<pre class="example">
+((pk1='pk1value' AND pk2='pk2vaue') OR (uq2='uq2value' AND uq3='uq3value')).
+</pre>
+</div>
+<div id="section5" class="section"><h2><a name="section5">EXAMPLES</a></h2>
+<p>Following examples are provided to give a good illustration on how to use
+this package.</p>
+<p><em>Example 1</em></p>
+<pre class="example">
+##
+##  This is an interactive example, to see what is 
+##  returned by each command as well.
+##
+% namespace import ::tdao::dao::*
+% # define a nested record. Notice that country has default 'USA'.
+% dao define Address  address {
+        id
+        addrline1
+        addrline2
+        city
+        postalcode
+        {country USA}
+    }  -primarykey id  -autoincrement id
+::Address
+% # Create an instance for the Address DAO definition.
+% Address addr1
+::addr1
+% # Display some introspection values
+% dao show definitions
+::Address
+% #
+% record show values addr1
+-id &lt;&lt;dao-undefined&gt;&gt; -addline1 &lt;&lt;dao-undefined&gt;&gt; -addrline2 &lt;&lt;dao-undefined&gt;&gt; -city &lt;&lt;dao-undefined&gt;&gt; -postalcode &lt;&lt;dao-undefined&gt;&gt; -country USA
+% #
+% record show instances Address
+::addr1
+% #
+% addr1 configure
+-id &lt;&lt;dao-undefined&gt;&gt; -addline1 &lt;&lt;dao-undefined&gt;&gt; -addrline2 &lt;&lt;dao-undefined&gt;&gt; -city &lt;&lt;dao-undefined&gt;&gt; -postalcode &lt;&lt;dao-undefined&gt;&gt; -country USA
+% #
+% addr1 cget
+-id &lt;&lt;dao-undefined&gt;&gt; -addline1 &lt;&lt;dao-undefined&gt;&gt; -addrline2 &lt;&lt;dao-undefined&gt;&gt; -city &lt;&lt;dao-undefined&gt;&gt; -postalcode &lt;&lt;dao-undefined&gt;&gt; -country USA
+% # copy one DAO definition to another
+% dao define Address2 address2 [dao show members Address]
+::Address2
+</pre>
+<p><em>Example 1</em></p>
+<p>This next example a complete working code to store</p>
+<pre class="example">
+% # define a very simple record for linked list
+% record define llist {
+    value
+    next
+}
+::llist
+% llist lstart
+::lstart
+% lstart config -value 1 -next [llist #auto]
+% [lstart cget -next] config -value 2 -next [llist #auto]
+% [[lstart cget -next] cget -next] config -value 3 -next &quot;end&quot;
+% set next lstart
+lstart
+% while 1 {
+lappend values [$next cget -value]
+set next [$next cget -next]
+if {[string match &quot;end&quot; $next]} {break}
+}
+% puts &quot;$values&quot;
+1 2 3
+% # cleanup linked list
+% # We could just use delete record llist also
+% foreach I [record show instances llist] {
+record delete instance $I
+}
+% record show instances llist
+%
+</pre>
+</div>
+<div id="section6" class="section"><h2><a name="section6">See Also</a></h2>
+<p><b class="cmd">tdao</b>, <b class="cmd">tdao::dbc</b> and <b class="cmd">struct::record</b></p>
+</div>
+<div id="section7" class="section"><h2><a name="section7">AUTHOR</a></h2>
+<p>Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;</p>
+</div>
+<div id="section8" class="section"><h2><a name="section8">BUGS, IDEAS, FEEDBACK</a></h2>
+<p>This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category <em>tdao :: dao</em> of the
+<a href="http://sourceforge.net/tracker/?group_id=12883">Tcllib SF Trackers</a>.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.</p>
+</div>
+<div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
+<p>DAO, Data Access Objects, Database Connectivity</p>
+</div>
+<div id="category" class="section"><h2><a name="category">Category</a></h2>
+<p>Database</p>
+</div>
+<div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
+<p>Copyright &copy; 2013, Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;</p>
+</div>
+</div></body></html>

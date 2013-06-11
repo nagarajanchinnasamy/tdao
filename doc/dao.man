@@ -1,38 +1,81 @@
 [comment {-*- tcl -*-}]
-[manpage_begin tdao::dao n 0.1.0]
+[manpage_begin tdao n 0.1.0]
 [copyright {2013, Nagarajan Chinnasamy <nagarajanchinnasamy@gmail.com>}]
 [moddesc   {Tcl Data Access Objects}]
-[titledesc {Define and create DAOs}]
+[titledesc {Define and create Data Access Objects}]
 [category  {Database}]
 [require Tcl 8.5]
-[require struct::record [opt 1.2.1]]
+[require tdao [opt 0.1.0]]
 [description]
 
-The [cmd ::tdao::dao] package provides a mechanism to define and use
-Data Access Objects (DAOs) in a platform independent, object oriented manner.
-A DAO definition represents the definition of a table/view in a database. A
-DAO instance represents a record/tuple in a table. A DAO definition contains
-name of the table/view, list of field names and optional information about primary key, unique and
-auto-increment (or sequence) fields.
+[para]
+[cmd tdao::dao] is a sub-package of [cmd tdao] package that provides
+methods to [method define] the schema of a table/view in a DAO
+definition and create and manipulate DAO instances. The interface
+provided by [cmd tdao::dao] package is very similar to
+[cmd struct::record] package. It just adds additional methods (
+[method add], [method get], [method save] and [method delete]) to
+[cmd struct::record] package to manipulate records of a table/view.
 
 [para]
-Each DAO definition creates an object that encompasses that definition. Subsequently, that
-definition object can create instances of that definition. These instances can then
-be manipulated with the [method cget], [method configure] and [method reset] methods.
+Each DAO definition creates an object that encompasses that definition.
+Subsequently, using the definition object one can create DAO instances
+of that definition. These instances can then be manipulated with the
+[method cget], [method configure], [method reset] [method add],
+[method get], [method save] and [method delete] methods.
 
 [para]
-The package only contains one top level command, but several sub commands (see below). It also obeys the namespace in which the DAO was defined, hence the objects returned are fully qualified.
+With every DAO instance, [method [arg connectionName]] needs to be
+associated to enable the instance to communicate with the database when
+data manipulation methods [method add], [method get], [method save] and
+[method delete] are invoked. This [method [arg connectionName]] can be
+obtained using [method open] method of [cmd ::tdao::dbc] package. 
+
+[para]
+The [cmd tdao::dao] package only contains one top level command, but
+several sub commands (see below). It also obeys the namespace in which
+the DAO was defined, hence the objects returned are fully qualified.
 
 [list_begin definitions]
 
-[call [cmd {dao define}] [arg definitionName] [arg schemaName] [arg schemaMembers] [opt [arg "-primarykey fieldsList -autoincrement fieldsList -unique fieldsListOfLists]]]
+[call [cmd {dao define}] [arg definitionName] [arg schemaName] [arg schemaFields] [opt [arg "-primarykey  fieldsList"]] [opt [arg "-autoincrement fieldsList"]] [opt [arg "-unique fieldsListOfLists"]]]
 
-Defines a DAO. [arg definitionName] is the name of the DAO definition, and is also
-used as an object command. This object command is used to create instances of the
-DAO definition. [arg schemaName] is the name of the table/view that this DAO defines.
-[arg schemaMembers] are the field names of the schema that make up the DAO definition.
-Optional arguments [opt [arg "-primarykey fieldsList -autoincrement fieldsList -unique fieldsListOfLists]]
-are used include further details of the schema into DAO definition.
+Defines a DAO. [arg definitionName] is the name of the DAO definition,
+and is also used as an object command. This object command is used to
+create DAO instances. [arg schemaName] is the name of the table/view
+that this DAO defines. [arg schemaFields] are the field names of the
+schema that make up the DAO definition. Optional arguments
+[opt [arg "-primarykey  fieldsList"]] 
+[opt [arg "-autoincrement fieldsList"]]
+[opt [arg "-unique fieldsListOfLists"]] are used to include further
+details of the schema into DAO definition.
+
+[para]
+A DAO definition contains a list of field names, where each field name
+represents a column name in a table/view. A field can optionally have a
+default initial value. When a default value is given, the field is
+specified as a list having its name and value as elements. If no
+default initial value is given, then the value is automatically set to
+[const <<dao-undefined>>] by the [method "dao define"] method. For
+example, a DAO definition of address table would look like this:
+
+[example_begin]
+# this is a DAO definition with name Address for table address
+dao define Address address {
+    addrline1
+    addrline2
+    {city Bangalore}
+    {postalcode 560001}
+    {country India}
+}
+
+[example_end]
+
+All instances created from this DAO definition, will initially have 
+Bangalore, 560001 and India as the value for [arg city],
+[arg postalcode] and [arg country] respectively. [arg addrline1] and
+[arg addrline2] will have internally set value of
+[const <<dao-undefined>>]
 
 [call [cmd {dao show}] [arg definitions]]
 
@@ -55,234 +98,284 @@ Returns a list of values that are set for the instance
 
 [call [cmd {dao exists}] [arg definition] [arg definitionName]]
 
-Tests for the existence of a DAO [arg definition] with the
-name [arg definitionName].
+Returns 1 if a DAO [arg definition] with the name [arg definitionName]
+exists, else returns 0.
 
 [call [cmd {dao exists}] [arg instance] [arg instanceName]]
 
-Tests for the existence of a DAO [arg instance] with the
-name [arg instanceName].
+Returns 1 if a DAO [arg instance] with the name [arg instanceName]
+exists, else returns 0
 
 [call [cmd {dao delete}] [arg definition] [arg definitionName]]
 
-Deletes DAO definition [arg definitionName], and all instances of [arg definitionName]. It will return
-an error if the [arg definitionName] does not exist.
+Deletes DAO definition [arg definitionName], and all instances of
+[arg definitionName]. It returns an error if the [arg definitionName]
+does not exist.
 
 [call [cmd {dao delete}] [arg instance] [arg instanceName]]
 
 Deletes DAO [arg instance] with the name of [arg instanceName]. It
-will return an error if the [arg instanceName] does not exist.
+returns an error if the [arg instanceName] does not exist.
+
+[list_end]
+
+[para]
+
+[section {DAO DEFINITION COMMAND}]
+
+[list_begin definitions]
+
+[call [arg definitionName] [method [arg instanceName|#auto]] [method [arg connectionName]] [opt [arg "-field1 val1"]] [opt [arg "-field2 val2"]] [opt [arg "..."]]]
+
+Using the [arg definitionName] command that was created from the DAO
+definition, instances of the DAO definition can be created. Once an
+instance is created, then it contains the fields of the DAO definition,
+very similar to how objects work. During instance generation, an object
+command for the instance is created as well, using [arg instanceName].
+This instance object command is used to access the data members of the
+instance. During the instantiation, values for that instance can be
+given in key/value pairs.
+
+[para]
+With every DAO instance, [method [arg connectionName]] needs to be
+associated to enable the instance to communicate with the database when
+data manipulation methods [method add], [method get], [method save] and
+[method delete] are invoked. This [method [arg connectionName]] can be
+obtained using [method open] method of [cmd ::tdao::dbc] package. 
+
+[para]
+Optionally, [arg #auto] can be used in place of [arg instanceName].
+When #auto is used, then an instance name will automatically be
+generated, of the form definitionName<integer>, where <integer> is a
+unique integer (starting at 0) that is generated.
+
+[para]
+[example_begin]
+# create an object instance addr1 with default values
+Address addr1 conn
+[example_end]
+
+[para]
+[example_begin]
+# create an object instance addr2 with assigned values
+Address addr2 conn -city Chennai -postalcode 638001
+[example_end]
 
 [list_end]
 [para]
-      
-[section {RECORD MEMBERS}]
 
-Record members can either be variables, or other records, However, the
-same record can not be nested witin itself (circular). To define a
-nested record, you need to specify the [const record] keyword, along
-the with name of the record, and the name of the instance of that
-nested record. For example, it would look like this:
+[section {DAO INSTANCE COMMANDS}]
+ 
+The following subcommands and corresponding arguments are available to
+any DAO instance command:
 
-[para]
-[example_begin]
-# this is the nested record
-record define mynestedrecord {
-    nest1
-    nest2
-}
+[list_begin definitions]
+ 
+[call [arg instanceName] [method cget] [opt [arg -field1]] [opt [arg -field2]] [opt [arg "..."]]]
 
-# This is the main record
-record define myrecord {
-    mem1
-    mem2
-    {record mynestedrecord mem3}
-}
-
-[example_end]
-
-You can also assign default or initial values to the members of a record,
-by enclosing the member entry in braces:
+Each instance has the sub command [method cget] associated with it. This
+is very similar to how Tk widget's cget command works. It queries
+the values of the field for that particular instance. If
+no arguments are given, then a key/value list is returned.
 
 [para]
-[example_begin]
 
-record define myrecord {
-    mem1
-    {mem2 5}
-}
-
-[example_end]
-
-All instances created from this record definition, will initially have 5 as
-the value for [arg mem2]. If no default is given, then the value will be the empty string.
-
-[para]
-[emph {Getting Values}]
-[para]
-
-To get a value of a member, there are several ways to do this. 
+To get a value of a field, there are several ways to do this. 
 
 [list_begin enumerated]
 
 [enum]
-To get a member value, then use the instance built-in [method cget] method:
+To get a field's value, use the instance built-in [method cget] method:
+
 [para]
-    [arg instanceName] [method cget] -mem1
+[example_begin]
+    [arg addr1] [method cget] -city
+[example_end]
 
 [enum]
-To get multiple member values, you can specify them all in one command:
+To get multiple field values, you can specify them all in one command:
 [para]
-    [arg instanceName] [method cget] -mem1 -mem2
+[example_begin]
+    [arg addr1] [method cget] -addrline1 -addrline2
+[example_end]
 
 [enum]
 To get a list of the key/value of all of the members, there are 3 ways:
 [para]
-    - [arg instanceName] [method cget]
-[para]
-	- [arg instanceName] [method configure]
-[para]
-	- [arg instanceName]
-
-[enum]
-To get a value of a nested member, then use the dot notation:
-[para]
-    [arg instanceName] [method cget] -mem3.nest1
+[example_begin]
+    [arg addr1]
+    [arg addr1] [method cget]
+    [arg addr1] [method configure]
+[example_end]
 
 [list_end]
 
-[para]
-[emph {Setting Values}]
+[call [arg instanceName] [method configure] [opt [arg "-field1 val1"]] [opt [arg "-field2 val2"]] [opt [arg "..."]]]
+
+Each instance has the sub command [method configure] associated with it. This
+is very similar to how Tk widget's configure command works. It sets
+the values of the particular field for that particular instance. If
+no arguments are given, then a key/value list is returned.
+
+[call [arg instanceName] [method reset] [opt [arg -field1]] [opt [arg -field2]] [opt [arg "..."]]]
+
+Each instance has the sub command [method reset] associated with it. It
+sets the values of the particular field to it's initial default value
+given in the correponding DAO definition. Fields that were not given
+default initial value are given a value of [const <<dao-undefined>>].
+If no arguments are given, then value of all the fields are reset.
+
 [para]
 
-To set a value of a member, there are several ways to do this. 
+To set a value of a field, there are several ways to do this. 
 
 [list_begin enumerated]
 
 [enum]
-To set a member value, then use the instance built-in [method configure] method:
+To set a field value:
 [para]
-    [arg instanceName] [method configure] -mem1 val1
+[example_begin]
+    [arg addr1] [method configure] -addrline1 val1
+[example_end]
 
 [enum]
-To set multiple member values, you can specify them all in one command:
+To set multiple field values, you can specify them all in one command:
 [para]
-    [arg instanceName] [method configure] -mem1 va1 -mem2 val2
+[example_begin]
+    [arg addr1] [method configure] -addrline1 va1 -addrline2 val2
+[example_end]
 
 [enum]
-To set a value of a nested member, then use the dot notation:
+To reset all the field values as per the DAO definition:
 [para]
-    [arg instanceName] [method configure] -mem3.nest1 value
+[example_begin]
+    [arg addr1] [method reset]
+[example_end]
 
 [list_end]
 
-[para]
-[emph {Alias access}]
-[para]
+[call [arg instanceName] [method add] [opt [arg -field1]] [opt [arg -field2]] [opt [arg "..."]]]
 
-In the original implementation, access was done by using dot notation similar to how 'C' structures are accessed. However, 
-there was a concensus to make the interface more Tcl like, which made sense. However, the original alias access still
-exists. It might prove to be helpful to some.
+Each instance has the sub command [method add] associated with it. It 
+inserts the object as a new record into database. In preparing the
+record to insert, this method prepares a list of name-value pairs,
+by default, from all the fields of the object. However, if the optional
+arguments are passed, it uses only those field names in the arguments
+in preparing the name-value pairs. While preparing the name-value
+pairs, it includes only those fields that are initialized with a value
+other than <<dao-undefined>>. Instead of an empty string, we make use
+of this state of a field to indicate the absense of a field in the
+insert operation (thus resulting in NULL or default value in the
+database). Upon successful completion of add operation, the new values
+of sequence / auto-incremented fields are populated back into the
+object.
 
 [para]
-Basically, for every member of every instance, an alias is created. This alias is used to get and set values for that
-member. An example will illustrate the point, using the above defined records:
+Returns the status of add operation as a numerical value. A value
+greater than zero indicates success.
+
+[call [arg instanceName] [method get] [opt [arg -field1]] [opt [arg -field2]] [opt [arg "..."]]]
+
+Each instance has the sub command [method get] associated with it. It
+retrieves a unique record from the database and populates DAO instance
+fields. The process of preparing the condition needed to identify the
+unique record from the field values of a DAO instance is explained in
+section Object To Database Record Mapping. By default, this method
+retrieves the values for all the fields of the object. However, if the
+optional arguments are passed, it retrieves only those fields in the
+arguments.
+
+[para]
+Returns fieldname-value pairs retrieved from database as a Tcl 
+dictionary. If the retrieval does not return any record from database,
+then the result will be an empty string.
+
+[call [arg instanceName] [method save] [opt [arg -field1]] [opt [arg -field2]] [opt [arg "..."]]]
+
+Each instance has the sub command [method save] associated with it. It
+saves the object by updating the corresponding record into the
+database. The process of preparing the condition needed to identify the
+unique record from the field values of a DAO instance is explained in
+section Object To Database Record Mapping. In preparing the
+record to updte, this method prepares a list of name-value pairs,
+by default, from all the fields of the object. However, if the optional
+arguments are passed, it uses only those field names in the arguments
+to prepare the name-value pairs. While preparing the name-value
+pairs, it includes only those fields that are initialized with a value
+other than <<dao-undefined>>. Instead of an empty string, we make use
+of this state of a field to indicate the absense of a field in the
+update operation (thus not affecting those fields in the database).
+
+[para]
+Returns the status of save operation as a numerical value. A value
+greater than zero indicates success.
+
+[call [arg instanceName] [method delete]]
+
+Each instance has the sub command [method delete] associated with it.
+It deletes the record from database represented by the object and
+resets the object values. The unique record to be deleted from the
+database is identified based on the description provided in Object To
+Database Record Mapping.
+
+[para]
+Returns the status of delete operation as a numerical value. A value
+greater than zero indicates success.
+
+
+[list_end]
+
+[section {Object To Database Record Mapping}]
+Methods [method get], [method save] and [method delete] need to
+identify a unique record in the database that the DAO instance
+represents. A unique record is identified by the values of primary key
+and/or unique fields of the object. These field names are provided in
+DAO definition using optional arguments -primarykey, -unique and
+-autoincrement options.
+
+[para]
+For e.g., if the primary key was defined as {pk1 pk2} and unique fields
+were defined as {{uq1} {uq2 uq3}} then the condition to be used in
+WHERE clause of SQL statement to identify the unique record will be:
 
 [para]
 [example_begin]
-# Create an instance first
-% myrecord inst1
-::inst1
-% # To get a member of an instance, just use the 
-% # alias (it behaves like a Tcl command):
-% inst1.mem1
-%
-% # To set a member via the alias, just include 
-% # a value (optionally the equal sign - syntactic sugar)
-% inst1.mem1 = 5
-5
-% inst1.mem1
-5
-% # For nested records, just continue with the 
-% # dot notation (note no equal sign)
-% inst1.mem3.nest1 10
-10
-% inst1.mem3.nest1
-10
-% # just the instance by itself gives all 
-% # member/values pairs for that instance
-% inst1
--mem1 5 -mem2 {} -mem3 {-nest1 10 -nest2 {}}
-% # and to get all members within the nested record
-% inst1.mem3
--nest1 10 -nest2 {}
-%
-
+((pk1='pk1value' AND pk2='pk2vaue') OR (uq1='uq1value') OR (uq2='uq2value' AND uq3='uq3value'))
 [example_end]
 
-[section {RECORD COMMAND}]
-
-The following subcommands and corresponding arguments are available to any
-record command:
-
-[list_begin definitions]
-
-[call [arg recordName] [method [arg instanceName|#auto]] [opt [arg "-member1 value1 -member2 value2 ..."]]]
-
-Using the [arg recordName] object command that was created from the record definition, 
-instances of the record definition can be created. Once a instance is
-created, then it inherits the members of the record definition, very
-similar to how objects work. During instance generation, an object command for the instance
-is created as well, using [arg instanceName]. This object command is used
-to access the data members of the instance. During the instantiation, values for
-that instance can be given, [emph but] all values must be given, and be given
-in key/value pairs. Nested records, need to be in list format.
+[para]
+If any of the fields listed as part of primary key or unique fields are
+uninitialized (i.e., having the value <<dao-undefined>>), then those
+fields are not included in the condition. For e.g., if pk1 is
+uninitialized, then the condition will be:
 
 [para]
-Optionally, [arg #auto] can be used in place of [arg instanceName]. When #auto is used,
-then a instance name will automatically be generated, of the form recordName<integer>, where
-<integer> is a unique integer (starting at 0) that is generated.
+[example_begin]
+((uq1='uq1value') OR (uq2='uq2value' AND uq3='uq3value'))
+[example_end]
 
-[list_end]
 [para]
+Or, for e.g., if uq2 is uninitialized, then the condition will be:
+[para]
+[example_begin]
+((pk1='pk1value' AND pk2='pk2vaue') OR (uq1='uq1value')).
+[example_end]
 
-[section {INSTANCE COMMAND}]
- 
-The following subcommands and corresponding arguments are available to
-any record instance command:
-
-[list_begin definitions]
- 
-[call [arg instanceName] [method cget] [opt [arg "-member1 -member2 ..."]]]
-
-Each instance has the sub command [method cget] associated with it. This
-is very similar to how Tk widget's cget command works. It queries
-the values of the member for that particular instance. If
-no arguments are given, then a key/value list is returned.
-
-[call [arg instanceName] [method configure] [opt [arg "-member1 value1 -member2 value2 ..."]]]
-
-Each instance has the sub command [method configure] associated with it. This
-is very similar to how Tk widget's configure command works. It sets
-the values of the particular member for that particular instance. If
-no arguments are given, then a key/value list is returned.
-
-[list_end]
+[para]
+Or, for e.g., if uq1 is uninitialized, then the condition will be:
+[para]
+[example_begin]
+((pk1='pk1value' AND pk2='pk2vaue') OR (uq2='uq2value' AND uq3='uq3value')).
+[example_end]
 
 [section EXAMPLES]
  
-Two examples are provided to give an good illustration on how to use
+Following examples are provided to give a good illustration on how to use
 this package.
 
 [para]      
 [emph {Example 1}]
 [para]
-
-Probably the most obvious example would be to hold contact information,
-such as addresses, phone numbers, comments, etc. Since a person can have
-multiple phone numbers, multiple email addresses, etc, we will use nested
-records to define these. So, the first thing we do is define the nested
-records:
 
 [para]
 [example {
@@ -295,58 +388,46 @@ records:
 % namespace import ::tdao::dao::*
 
 % # define a nested record. Notice that country has default 'USA'.
-% record define locations {
-    street
-    street2
-    city
-    state
-    zipcode
-    {country USA}
-    phone
-}
-::locations
-% # Define the main record. Notice that it uses the location record twice.
-% record define contacts {
-    first 
-    middle 
-    last 
-    {record locations home}
-    {record locations work}
-}
-::contacts
-% # Create an instance for the contacts record.
-% contacts cont1
-::cont1
+% dao define Address \
+    address {
+        id
+        addrline1
+        addrline2
+        city
+        postalcode
+        {country USA}
+    } \
+    -primarykey id \
+    -autoincrement id
+::Address
+% # Create an instance for the Address DAO definition.
+% Address addr1
+::addr1
 % # Display some introspection values
-% record show records
-::contacts ::locations
+% dao show definitions
+::Address
 % #
-% record show values cont1
--first {} -middle {} -last {} -home {-street {} -street2 {} -city {} -state {} -zipcode {} -country USA -phone {}} -work {-street {} -street2 {} -city {} -state {} -zipcode {} -country USA -phone {}}
+% record show values addr1
+-id <<dao-undefined>> -addline1 <<dao-undefined>> -addrline2 <<dao-undefined>> -city <<dao-undefined>> -postalcode <<dao-undefined>> -country USA
 % #
-% record show instances contacts
-::cont1
+% record show instances Address
+::addr1
 % #
-% cont1 config
--first {} -middle {} -last {} -home {-street {} -street2 {} -city {} -state {} -zipcode {} -country USA -phone {}} -work {-street {} -street2 {} -city {} -state {} -zipcode {} -country USA -phone {}}
+% addr1 configure
+-id <<dao-undefined>> -addline1 <<dao-undefined>> -addrline2 <<dao-undefined>> -city <<dao-undefined>> -postalcode <<dao-undefined>> -country USA
 % #
-% cont1 cget
--first {} -middle {} -last {} -home {-street {} -street2 {} -city {} -state {} -zipcode {} -country USA -phone {}} -work {-street {} -street2 {} -city {} -state {} -zipcode {} -country USA -phone {}}
-% # copy one record to another record
-% record define contacts2 [record show members contacts]
-::contacts2
-% record show members contacts2
-first middle last {record locations home} {record locations work}
-% record show members contacts
-first middle last {record locations home} {record locations work}
-%
+% addr1 cget
+-id <<dao-undefined>> -addline1 <<dao-undefined>> -addrline2 <<dao-undefined>> -city <<dao-undefined>> -postalcode <<dao-undefined>> -country USA
+% # copy one DAO definition to another
+% dao define Address2 address2 [dao show members Address]
+::Address2
 }]
 
 [para]      
 [emph {Example 1}]
 [para]
 
-This next example just illustrates a simple linked list
+This next example a complete working code to store
 [para]
 [example {
 
@@ -381,18 +462,23 @@ record delete instance $I
 }]
 
 [para]
+[section {See Also}]
+[cmd tdao], [cmd tdao::dbc] and [cmd struct::record]
+[para]
+[keywords DAO {Data Access Objects} {Database Connectivity}]
+[para]
+[section {AUTHOR}]
+
+Nagarajan Chinnasamy <nagarajanchinnasamy@gmail.com>
 
 [section {BUGS, IDEAS, FEEDBACK}]
 
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 
-Please report such in the category [emph {struct :: record}] of the
+Please report such in the category [emph {tdao :: dao}] of the
 [uri {http://sourceforge.net/tracker/?group_id=12883} {Tcllib SF Trackers}].
 
 Please also report any ideas for enhancements you may have for either
 package and/or documentation.
-
-
-[keywords struct record {data structures}]
 [manpage_end]

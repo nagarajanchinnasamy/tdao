@@ -1,0 +1,310 @@
+
+<html><head>
+<title>tdao - Tcl Data Access Objects</title>
+<style type="text/css"><!--
+    HTML {
+	background: 	#FFFFFF;
+	color: 		black;
+    }
+    BODY {
+	background: 	#FFFFFF;
+	color:	 	black;
+    }
+    DIV.doctools {
+	margin-left:	10%;
+	margin-right:	10%;
+    }
+    DIV.doctools H1,DIV.doctools H2 {
+	margin-left:	-5%;
+    }
+    H1, H2, H3, H4 {
+	margin-top: 	1em;
+	font-family:	sans-serif;
+	font-size:	large;
+	color:		#005A9C;
+	background: 	transparent;
+	text-align:		left;
+    }
+    H1.title {
+	text-align: center;
+    }
+    UL,OL {
+	margin-right: 0em;
+	margin-top: 3pt;
+	margin-bottom: 3pt;
+    }
+    UL LI {
+	list-style: disc;
+    }
+    OL LI {
+	list-style: decimal;
+    }
+    DT {
+	padding-top: 	1ex;
+    }
+    UL.toc,UL.toc UL, UL.toc UL UL {
+	font:		normal 12pt/14pt sans-serif;
+	list-style:	none;
+    }
+    LI.section, LI.subsection {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding: 	0em;
+    }
+    PRE {
+	display: 	block;
+	font-family:	monospace;
+	white-space:	pre;
+	margin:		0%;
+	padding-top:	0.5ex;
+	padding-bottom:	0.5ex;
+	padding-left:	1ex;
+	padding-right:	1ex;
+	width:		100%;
+    }
+    PRE.example {
+	color: 		black;
+	background: 	#f5dcb3;
+	border:		1px solid black;
+    }
+    UL.requirements LI, UL.syntax LI {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding:	0em;
+    }
+    DIV.synopsis {
+	color: 		black;
+	background: 	#80ffff;
+	border:		1px solid black;
+	font-family:	serif;
+	margin-top: 	1em;
+	margin-bottom: 	1em;
+    }
+    UL.syntax {
+	margin-top: 	1em;
+	border-top:	1px solid black;
+    }
+    UL.requirements {
+	margin-bottom: 	1em;
+	border-bottom:	1px solid black;
+    }
+--></style>
+</head>
+<! -- Generated from file 'tdao.man' by tcllib/doctools with format 'html'
+   -->
+<! -- Copyright &copy; 2013, Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;
+   -->
+<! -- CVS: $Id$ tdao.n
+   -->
+<body><div class="doctools">
+<h1 class="title">tdao(n) 0.1.0  &quot;Tcl Data Access Objects&quot;</h1>
+<div id="name" class="section"><h2><a name="name">Name</a></h2>
+<p>tdao - Define and create Data Access Objects</p>
+</div>
+<div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
+<ul class="toc">
+<li class="section"><a href="#toc">Table Of Contents</a></li>
+<li class="section"><a href="#synopsis">Synopsis</a></li>
+<li class="section"><a href="#section1">Description</a></li>
+<li class="section"><a href="#section2">EXAMPLES</a></li>
+<li class="section"><a href="#section3">See Also</a></li>
+<li class="section"><a href="#section4">AUTHOR</a></li>
+<li class="section"><a href="#section5">BUGS, IDEAS, FEEDBACK</a></li>
+<li class="section"><a href="#keywords">Keywords</a></li>
+<li class="section"><a href="#category">Category</a></li>
+<li class="section"><a href="#copyright">Copyright</a></li>
+</ul>
+</div>
+<div id="synopsis" class="section"><h2><a name="synopsis">Synopsis</a></h2>
+<div class="synopsis">
+<ul class="requirements">
+<li>package require <b class="pkgname">Tcl 8.5</b></li>
+<li>package require <b class="pkgname">tdao <span class="opt">?0.1.0?</span></b></li>
+</ul>
+</div>
+</div>
+<div id="section1" class="section"><h2><a name="section1">Description</a></h2>
+<p>The <b class="cmd">tdao</b> package provides an object oriented mechanism to define
+and use Data Access Objects (DAOs) in a DBMS platform independent manner.
+A DAO definition models a table/view of a database through a list of
+field/column names and optional information about primary key, unique
+and auto-increment (or sequence) fields. A DAO instance represents a
+record/tuple of a table/view. DAO instances are used to manipulate (
+add, get, save and delete) records of a table.</p>
+<p>While <b class="cmd">tdao</b> provides an object oriented mechanism to work with DAOs,
+it does not depend on any object oriented extensions of Tcl. Hence, the
+knowledge of such extensions is not necessary.</p>
+<p><b class="cmd">tdao</b> package contains two sub-packages: <b class="cmd">tdao::dbc</b> and
+<b class="cmd">tdao::dao</b>.</p>
+<p><b class="cmd">tdao::dbc</b> package provides methods to <b class="method">load</b> a database
+driver and <b class="method">open</b> a database connection. Using the connection
+handle returned by <b class="method">open</b>, one can invoke record manipulation
+methods, transaction handling methods and a method to <b class="method">close</b>
+the database connection. <b class="cmd">tdao::dbc</b> supports connectivity to
+<b class="const">sqlite</b>, <b class="const">postgres</b>, <b class="const">mariadb</b> database
+drivers.</p>
+<p><b class="cmd">tdao::dao</b> package provides methods to <b class="method">define</b> the schema
+of a table/view in a DAO definition and create and manipulate DAO
+instances. The interface provided by <b class="cmd">tdao::dao</b> package is very
+similar to <b class="cmd">struct::record</b> package. It just adds additional
+methods (<b class="method">add</b>, <b class="method">get</b>, <b class="method">save</b> and <b class="method">delete</b>)
+to <b class="cmd">struct::record</b> package to manipulate records of a table/view.</p>
+<p>With every DAO instance, a <b class="method"><i class="arg">connection</i></b> handle needs to be
+associated to enable the instance to communicate with the database when
+data manipulation methods <b class="method">add</b>, <b class="method">get</b>, <b class="method">save</b> and
+<b class="method">delete</b> are invoked. This <b class="method"><i class="arg">connection</i></b> can be
+obtained using <b class="method">open</b> method of <b class="cmd">::tdao::dbc</b> package.</p>
+</div>
+<div id="section2" class="section"><h2><a name="section2">EXAMPLES</a></h2>
+<p>Following example gives a step-by-step illustration on how to use
+this package.</p>
+<pre class="example">
+#
+# Step 0: Setup a database named employee using the employee_schema.sql
+#         found in the respective sub-folder in demo folder. Create
+#         necessary user account and previleges.
+#
+# Step 1: Load tdao package and import dao and dbc commands
+#
+#
+package require tdao
+namespace import -force tdao::dao::dao
+namespace import -force tdao::dbc::dbc
+</pre>
+<pre class="example">
+#
+# Step 2: Load Database connectivity module and open a connection.
+#         Un/Comment lines below as necessary
+#
+#
+set db [dbc load sqlite]
+set conn [$db open [file normalize &quot;sqlite/employee.db&quot;]]
+#~ set db [dbc load postgres]
+#~ set conn [$db open employee -user nagu -password Welcome123]
+#~ set db [dbc load mariadb]
+#~ set conn [$db open employee -user nagu -password Welcome123]
+</pre>
+<pre class="example">
+#
+# Step 3: Define Data Access Objects (DAO): address &amp; employee
+#
+#
+puts [dao define Address  address {
+    id
+    addrline1
+    addrline2
+    {city Bangalore}
+    {postalcode 560001}
+    {country India}
+} -primarykey id -autoincrement id]
+#
+#
+puts [dao define Employee  employee {
+    id
+    name
+    rollno
+    address_id
+} -primarykey id -autoincrement id]
+</pre>
+<pre class="example">
+#
+# Step 4: Define Transactions: save_employee
+#
+#
+proc save_employee {conn op emp addr} {
+  $conn begin
+    switch $op {
+      add {
+        if {[catch {$addr add} err]} {
+          $conn rollback
+          return -code error $err
+        }
+        $emp configure -address_id [$addr cget -id]
+        if {[catch {$emp add} err]} {
+          $conn rollback
+          return -code error $err
+        }
+      }
+      update {
+        if {[catch {$addr save} err]} {
+          $conn rollback
+          return -code error $err
+        }
+        if {[catch {$emp save} err]} {
+          $conn rollback
+          return -code error $err
+        }          
+      }
+    }
+  $conn commit
+  return 1
+}
+</pre>
+<pre class="example">
+#
+# Step 5: Instantiate DAOs address &amp; employee
+#
+#
+Employee emp $conn -name &quot;Employee Name1&quot; -rollno &quot;INBNG0001&quot;
+puts &quot;Employee before adding: [emp cget]&quot;
+Address addr $conn  -addrline1 &quot;Address Line 1&quot;  -addrline2 &quot;Address Line 2&quot;
+puts &quot;Address before adding: [addr cget]&quot;
+</pre>
+<pre class="example">
+#
+# Step 6: Add/Modify employee &amp; address
+#
+#
+if {[catch {save_employee $conn add emp addr} err]} {
+  puts &quot;Saving employee failed...\nError: $err&quot;
+  $conn close
+  exit
+}
+puts &quot;Employee after adding: [emp cget]&quot;
+puts &quot;Address after adding: [addr cget]&quot;
+# Modify and save Address object.
+addr configure  -addrline1 &quot;Updated Address Line 1&quot;  -addrline2 &quot;Updated Address Line 2&quot;  -city &quot;Updated City Name&quot;  -country &quot;Updated Country Name&quot;  -postalcode &quot;Updated Postal Code&quot;
+addr save
+# Check if the changes are reflected by retrieving it from database
+addr reset
+puts &quot;Reset address: [addr cget]&quot;
+addr configure -id [emp cget -address_id]
+addr get
+puts &quot;Modified address: [addr cget]&quot;
+</pre>
+<pre class="example">
+#
+# Step 7: Clean up and close the database connection
+#
+#
+dao delete object addr emp
+dao delete definition Address Employee
+$conn close
+</pre>
+</div>
+<div id="section3" class="section"><h2><a name="section3">See Also</a></h2>
+<p><b class="cmd">struct::record</b>, <b class="cmd">tdao::dbc</b> and <b class="cmd">tdao::dao</b></p>
+</div>
+<div id="section4" class="section"><h2><a name="section4">AUTHOR</a></h2>
+<p>Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;</p>
+</div>
+<div id="section5" class="section"><h2><a name="section5">BUGS, IDEAS, FEEDBACK</a></h2>
+<p>This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category <em>tdao</em> of the
+<a href="http://sourceforge.net/tracker/?group_id=12883">Tcllib SF Trackers</a>.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.</p>
+</div>
+<div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
+<p>DAO, Data Access Objects, Database Connectivity</p>
+</div>
+<div id="category" class="section"><h2><a name="category">Category</a></h2>
+<p>Database</p>
+</div>
+<div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
+<p>Copyright &copy; 2013, Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;</p>
+</div>
+</div></body></html>
