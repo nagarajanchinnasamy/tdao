@@ -1,5 +1,5 @@
 2013-06-11
-Version 1.0.1
+Version 0.1.0
   - tdbo re-written using pure tcl (no oo extensions needed)
   - sqlite, postgres and mariadb/mysql connectivity supported
   - documentation added in doctools format (needs further work)

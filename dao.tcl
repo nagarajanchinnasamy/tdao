@@ -42,6 +42,7 @@ proc ::tdao::dao::dao {cmd args} {
 proc ::tdao::dao::Define {schdefn_cmd schema_name fieldslist args} {
 	variable schemadefn
 	variable undefined
+	set options [dict create {*}$args]
 
 	set schdefn_cmd [_qualify $schdefn_cmd]
 	if {[dict exists $schemadefn $schdefn_cmd]} {
@@ -53,16 +54,16 @@ proc ::tdao::dao::Define {schdefn_cmd schema_name fieldslist args} {
 	set pklist [list]
 	set uqlist [list]
 
-	set recflist [list]
+	set recfields [dict create]
 	foreach f $fieldslist {
 		lassign $f n v
 		lappend flist $n
 		switch -- [llength $f] {
 			1 {
-				lappend recflist [list $n $undefined]
+				dict set recfields $n [list $n $undefined]
 			}
 			2 {
-				lappend recflist $f
+				dict set recfields $n $f
 			}
 			default {
 				return -code error "Unsupported nested definition found in $schdefn_cmd."
@@ -70,12 +71,20 @@ proc ::tdao::dao::Define {schdefn_cmd schema_name fieldslist args} {
 		}
 	}
 
-	set recdefn_cmd [format "%s%s" $schdefn_cmd "_record"]
-	if {[catch {uplevel 1 [list struct::record define $recdefn_cmd $recflist]} recdefn_cmd]} {
-		return -code error $recdefn_cmd
+	if {[dict exists $options -inherits]} {
+		foreach d [dict get $options -inherits] {
+			_inherit recfields [_qualify $d]
+		}
+		dict unset options -inherits
 	}
+	
+	set recdefn_cmd [format "%s%s" $schdefn_cmd "_record"]
+	if {[catch {uplevel 1 [list struct::record define $recdefn_cmd [dict values $recfields]]} result]} {
+		return -code error $result
+	}
+	set recdefn_cmd $result
 
-	foreach {opt val} $args {
+	foreach {opt val} $options {
 		switch -- $opt {
 			-autoincrement {
 				set sqlist $val
@@ -141,6 +150,7 @@ proc ::tdao::dao::Create {schdefn_cmd inst conn args} {
 		return -code error $recordinst
 	}
 
+	dict lappend instances $schdefn_cmd $inst
     dict set instances $inst -schdefn_cmd $schdefn_cmd
     dict set instances $inst -schema_name [dict get $schemadefn $schdefn_cmd -schema_name]
 	dict set instances $inst -recordinst $recordinst
@@ -156,7 +166,39 @@ proc ::tdao::dao::Delete {sub item} {
 proc ::tdao::dao::Exists {sub item} {
 }
 
-proc ::tdao::dao::Show {what {schema_name ""}} {
+proc ::tdao::dao::Show {what {of ""}} {
+	variable schemadefn
+	variable instances
+
+	switch -- $what {
+		definitions {
+			return [dict keys $schemadefn]
+		}
+		instances {
+			set of [_qualify $of]
+			if {![dict exists $schemadefn $of]} {
+				return -code error "Unknown definition $of"
+			}
+			if {![dict exists $instances $of]} {
+				return
+			}
+			return [dict get $instances $of]
+		}
+		fields {
+			set of [_qualify $of]
+			if {![dict exists $schemadefn $of]} {
+				return -code error "Unknown definition $of"
+			}
+			return [struct::record show members [dict get $schemadefn $of -recdefn_cmd]]
+		}
+		values {
+			set of [_qualify $of]
+			if {![dict exists $instances $of]} {
+				return -code error "Unknown DAO instance $of"
+			}
+			return [struct::record show values [dict get $instances $of -recordinst]]
+		}
+	}
 }
 
 proc ::tdao::dao::Cmd {inst conn cmd args} {
@@ -221,6 +263,23 @@ proc ::tdao::dao::configure {inst args} {
 proc ::tdao::dao::cget {inst args} {
 	variable recordinst
 
+	set fmt [lindex $args 0] 
+	if {$fmt == "dict"} {
+		if {[catch {uplevel 1 $recordinst cget} result]} {
+			return -code error $result
+		}
+
+		set args [lrange $args 1 end]
+		set result [dict create {*}$result]
+		set result [dict filter $result script {n v} {
+			if {[lsearch $args $n] < 0} {
+				continue
+			}
+			expr 1
+		}]
+		return $result
+	}
+
 	if {[catch {uplevel 1 $recordinst cget $args} result]} {
 		return -code error $result
 	}
@@ -252,7 +311,6 @@ proc ::tdao::dao::add {inst conn args} {
 	variable sqlist
 	variable recordinst
 
-	
 	if {$args == ""} {
 		set namevaluepairs [_make_namevaluepairs $insertlist]
 	} else {
@@ -386,6 +444,23 @@ proc ::tdao::dao::_make_namevaluepairs {fieldslist} {
 	}
 
 	return $namevaluepairs
+}
+
+proc ::tdao::dao::_inherit {recfieldsvar schdefn_cmd} {
+	variable schemadefn
+	variable flist
+	upvar $recfieldsvar recfields
+
+	set recdefn_cmd [dict get $schemadefn $schdefn_cmd -recdefn_cmd]
+	foreach f [struct::record show members $recdefn_cmd] {
+		lassign $f n v
+		if {[dict exists $recfields $n]} {
+			continue
+		}
+		
+		lappend flist $n
+		dict set recfields $n $f
+	}
 }
 
 proc ::tdao::dao::_qualify {item {level 2}} {
