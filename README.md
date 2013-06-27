@@ -1,4 +1,4 @@
-tdao(n) 0.1.0 "Tcl Data Access Objects"
+tdao(n) 0.1.1 "Tcl Data Access Objects"
 =======================================
 
 The tdao package provides an object oriented mechanism to define and use Data Access Objects (DAOs) in a DBMS platform independent manner. A DAO definition models a table/view of a database through a list of field/column names and optional information about primary key, unique and auto-increment (or sequence) fields. A DAO instance represents a record/tuple of a table/view. DAO instances are used to manipulate ( add, get, save and delete) records of a table.

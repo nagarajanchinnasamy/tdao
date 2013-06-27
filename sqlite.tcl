@@ -1,4 +1,4 @@
-# sqlitedb.tcl --
+# sqlite.tcl --
 #
 # sqlite3 connectivity module.
 #
@@ -112,4 +112,4 @@ proc ::tdao::dbc::sqlite::rollback {conn} {
 	$conn eval rollback
 }
 
-package provide tdao::dbc::sqlite 0.1.0
+package provide tdao::dbc::sqlite 0.1.1

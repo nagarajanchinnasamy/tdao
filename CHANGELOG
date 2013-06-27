@@ -1,5 +1,5 @@
 2013-06-27
-Version 0.1.0
+Version 0.1.1
   - documented tdao::dbc package
   - implemented dao::exists and dao::delete metods
 

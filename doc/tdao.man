@@ -1,11 +1,11 @@
 [comment {-*- tcl -*-}]
-[manpage_begin tdao n 0.1.0]
+[manpage_begin tdao n 0.1.1]
 [copyright {2013, Nagarajan Chinnasamy <nagarajanchinnasamy@gmail.com>}]
 [moddesc   {Tcl Data Access Objects}]
 [titledesc {Define and create Data Access Objects}]
 [category  {Database}]
 [require Tcl 8.5]
-[require tdao [opt 0.1.0]]
+[require tdao [opt 0.1.1]]
 [description]
 
 The [cmd tdao] package provides an object oriented mechanism to define

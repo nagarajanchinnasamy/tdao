@@ -8,9 +8,9 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
-package ifneeded tdao 0.1.0 [list source [file join $dir tdao.tcl]]
-package ifneeded tdao::dao 0.1.0 [list source [file join $dir dao.tcl]]
-package ifneeded tdao::dbc 0.1.0 [list source [file join $dir dbc.tcl]]
-package ifneeded tdao::dbc::mariadb 0.1.0 [list source [file join $dir mariadb.tcl]]
-package ifneeded tdao::dbc::postgres 0.1.0 [list source [file join $dir postgress.tcl]]
-package ifneeded tdao::dbc::sqlite 0.1.0 [list source [file join $dir sqlite.tcl]]
+package ifneeded tdao 0.1.1 [list source [file join $dir tdao.tcl]]
+package ifneeded tdao::dao 0.1.1 [list source [file join $dir dao.tcl]]
+package ifneeded tdao::dbc 0.1.1 [list source [file join $dir dbc.tcl]]
+package ifneeded tdao::dbc::mariadb 0.1.1 [list source [file join $dir mariadb.tcl]]
+package ifneeded tdao::dbc::postgres 0.1.1 [list source [file join $dir postgress.tcl]]
+package ifneeded tdao::dbc::sqlite 0.1.1 [list source [file join $dir sqlite.tcl]]

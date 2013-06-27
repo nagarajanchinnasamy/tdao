@@ -559,4 +559,4 @@ namespace eval ::tdao {
     namespace import -force dao::dao
     namespace export dao
 }
-package provide tdao::dao 0.1.0
+package provide tdao::dao 0.1.1

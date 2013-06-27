@@ -111,4 +111,4 @@ proc ::tdao::dbc::postgres::rollback {conn} {
 	pg_result $result -clear
 }
 
-package provide tdao::dbc::postgres 0.1.0
+package provide tdao::dbc::postgres 0.1.1

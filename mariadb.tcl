@@ -118,4 +118,4 @@ proc ::tdao::dbc::mariadb::rollback {conn} {
 	}
 }
 
-package provide tdao::dbc::mariadb 0.1.0
+package provide tdao::dbc::mariadb 0.1.1

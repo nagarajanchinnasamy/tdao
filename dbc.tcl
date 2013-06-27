@@ -315,4 +315,4 @@ namespace eval ::tdao {
     namespace export dbc
 }
 
-package provide tdao::dbc 0.1.0
+package provide tdao::dbc 0.1.1
