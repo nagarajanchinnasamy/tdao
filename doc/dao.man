@@ -1,5 +1,5 @@
 [comment {-*- tcl -*-}]
-[manpage_begin tdao n 0.1.1]
+[manpage_begin tdao::dao n 0.1.1]
 [copyright {2013, Nagarajan Chinnasamy <nagarajanchinnasamy@gmail.com>}]
 [moddesc   {Tcl Data Access Objects}]
 [titledesc {Define and create Data Access Objects}]
