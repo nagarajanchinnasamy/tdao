@@ -124,7 +124,7 @@ puts "Modified address: [addr cget]"
 # ---------------------------------------------------------------------
 # Step 7: Clean up and close the database connection
 # ---------------------------------------------------------------------
-#~ dao delete object addr emp
-#~ dao delete schema Address Employee
+dao delete inst addr emp
+dao delete def Address Employee
 
 $conn close

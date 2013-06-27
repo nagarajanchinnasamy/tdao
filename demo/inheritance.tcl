@@ -78,7 +78,7 @@ proc save_harddisk {conn op harddisk} {
 			}
 		}
 	$conn commit
-	dao delete object part
+	dao delete inst $part
 	return 1
 }
 
@@ -102,6 +102,7 @@ puts "After adding: [hd1 cget]"
 # ---------------------------------------------------------------------
 # Step 7: Clean up and close the database connection
 # ---------------------------------------------------------------------
-#~ dao delete object hd1
+dao delete inst hd1
+dao delete definitions Part HardDisk
 
 $conn close

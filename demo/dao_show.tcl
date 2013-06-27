@@ -65,7 +65,7 @@ puts "Values of part: [dao show values part]"
 # ---------------------------------------------------------------------
 # Step 5: Clean up and close the database connection
 # ---------------------------------------------------------------------
-#~ dao delete object addr emp
-#~ dao delete schema Address Employee
+dao delete instances part hd1
+dao delete definition Part HardDisk
 
 $conn close

@@ -160,10 +160,85 @@ proc ::tdao::dao::Create {schdefn_cmd inst conn args} {
     return $inst	
 }
 
-proc ::tdao::dao::Delete {sub item} {
+proc ::tdao::dao::Delete {sub args} {
+	variable schemadefn
+	variable instances
+
+	switch -- $sub {
+		definition -
+		definitions -
+		def {
+			foreach item $args {
+				set item [_qualify $item]
+				if {![dict exists $schemadefn $item]} {
+					return -code error "Definition $item does not exist"
+				}
+
+				# delete any existing instances
+				if {[dict exists $instances $item]} {
+					foreach inst [dict get $instances $item] {
+						Delete instance $inst
+					}
+				}
+
+				# delete corresponding record definition
+				set recdefn_cmd [dict get $schemadefn $item -recdefn_cmd]
+				if {[catch {uplevel 1 struct::record delete record $recdefn_cmd} result]} {
+					return -code error $result
+				}
+
+				# delete the definition
+				dict unset schemadefn $item
+
+				# remove command alias
+				catch {uplevel #0 [list interp alias {} $item {}]}
+			}
+		}
+		instance -
+		instances -
+		inst {
+			foreach item $args {
+				set item [_qualify $item]
+				if {![dict exists $instances $item]} {
+					return -code error "DAO instance $item does not exist"
+				}
+
+				# delete corresponding record inst
+				set recordinst [dict get $instances $item -recordinst]
+				if {[catch {uplevel 1 struct::record delete instance $recordinst} result]} {
+					return -code error $result
+				}
+
+				# delete from list of instances of the definition
+				set schdefn_cmd [dict get $instances $item -schdefn_cmd]
+				set insts [dict get $instances $schdefn_cmd]
+				set i [lsearch $insts $item]
+				if {$i >= 0} {
+					dict set instances $schdefn_cmd [lreplace $insts $i $i]
+				}
+
+				# delete it from instances
+				dict unset instances $item
+
+				# remove command alias
+				catch {uplevel #0 [list interp alias {} $item {}]}
+			}
+		}
+	}
 }
 
 proc ::tdao::dao::Exists {sub item} {
+	variable schemadefn
+	variable instances
+
+	switch -- $sub {
+		definition {
+			return [dict exists $schemadefn $item]
+		}
+		instance {
+			return [dict exists $instances $item]
+		}
+	}
 }
 
 proc ::tdao::dao::Show {what {of ""}} {

@@ -124,8 +124,8 @@ Add/Modify employee & address
 ###Step 7:
 Clean up and close the database connection
 
-    dao delete object addr emp
-    dao delete definition Address Employee
+    dao delete instances addr emp
+    dao delete definitions Address Employee
     $conn close
 
 ===
