@@ -15,32 +15,31 @@ With every DAO instance, a connection handle needs to be associated to enable th
 
 Following example gives a step-by-step illustration on how to use this package.
 
-    #
-    # Step 0: Setup a database using the example_schema.sql
-    #         found in the respective sub-folder in demo folder. Create
-    #         necessary user account and privileges.
-    #
-    # Step 1: Load tdao package and import dao and dbc commands
-    #
-    #
+###Step 0:
+Setup a database using the example_schema.sql found in the respective sub-folder in demo folder. Create necessary user account and privileges.
+
+###Step 1:
+Load tdao package and import dao and dbc commands
+
     package require tdao
     namespace import -force tdao::dao::dao
     namespace import -force tdao::dbc::dbc
-    #
-    # Step 2: Load Database connectivity module and open a connection.
-    #         Un/Comment lines below as necessary
-    #
-    #
+
+
+###Step 2:
+Load Database connectivity module and open a connection. Un/Comment lines below as necessary
+
     set db [dbc load sqlite]
     set conn [$db open [file normalize "sqlite/employee.db"]]
     #~ set db [dbc load postgres]
     #~ set conn [$db open employee -user nagu -password Welcome123]
     #~ set db [dbc load mariadb]
     #~ set conn [$db open employee -user nagu -password Welcome123]
-    #
-    # Step 3: Define Data Access Objects (DAO): address & employee
-    #
-    #
+
+
+###Step 3:
+Define Data Access Objects (DAO): address & employee
+
     puts [dao define Address  address {
         id
         addrline1
@@ -57,10 +56,11 @@ Following example gives a step-by-step illustration on how to use this package.
         rollno
         address_id
     } -primarykey id -autoincrement id]
-    #
-    # Step 4: Define Transactions: save_employee
-    #
-    #
+
+
+###Step 4:
+Define Transactions: save_employee
+
     proc save_employee {conn op emp addr} {
       $conn begin
         switch $op {
@@ -89,18 +89,20 @@ Following example gives a step-by-step illustration on how to use this package.
       $conn commit
       return 1
     }
-    #
-    # Step 5: Instantiate DAOs address & employee
-    #
-    #
+    
+
+###Step 5:
+Instantiate DAOs address & employee
+
     Employee emp $conn -name "Employee Name1" -rollno "INBNG0001"
     puts "Employee before adding: [emp cget]"
     Address addr $conn  -addrline1 "Address Line 1"  -addrline2 "Address Line 2"
     puts "Address before adding: [addr cget]"
-    #
-    # Step 6: Add/Modify employee & address
-    #
-    #
+
+
+###Step 6:
+Add/Modify employee & address
+
     if {[catch {save_employee $conn add emp addr} err]} {
       puts "Saving employee failed...\nError: $err"
       $conn close
@@ -117,16 +119,16 @@ Following example gives a step-by-step illustration on how to use this package.
     addr configure -id [emp cget -address_id]
     addr get
     puts "Modified address: [addr cget]"
-    #
-    # Step 7: Clean up and close the database connection
-    #
-    #
+
+
+###Step 7:
+Clean up and close the database connection
+
     dao delete object addr emp
     dao delete definition Address Employee
     $conn close
 
 ===
 
-Copyright
 
 Copyright © 2013, Nagarajan Chinnasamy <nagarajanchinnasamy@gmail.com>
