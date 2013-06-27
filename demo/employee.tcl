@@ -17,7 +17,7 @@ namespace import -force tdao::dbc::dbc
 #         Un/Comment lines below as necessary
 # ---------------------------------------------------------------------
 set db [dbc load sqlite]
-set conn [$db open [file normalize "sqlite/employee.db"]]
+set conn [$db open [file normalize "sqlite/example.db"]]
 #~ set db [dbc load postgres]
 #~ set conn [$db open employee -user nagu -password Welcome123]
 #~ set db [dbc load mariadb]

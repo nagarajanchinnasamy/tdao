@@ -423,44 +423,6 @@ this package.
 ::Address2
 }]
 
-[para]      
-[emph {Example 1}]
-[para]
-
-This next example a complete working code to store
-[para]
-[example {
-
-% # define a very simple record for linked list
-% record define llist {
-    value
-    next
-}
-::llist
-% llist lstart
-::lstart
-% lstart config -value 1 -next [llist #auto]
-% [lstart cget -next] config -value 2 -next [llist #auto]
-% [[lstart cget -next] cget -next] config -value 3 -next "end"
-% set next lstart
-lstart
-% while 1 {
-lappend values [$next cget -value]
-set next [$next cget -next]
-if {[string match "end" $next]} {break}
-}
-% puts "$values"
-1 2 3
-% # cleanup linked list
-% # We could just use delete record llist also
-% foreach I [record show instances llist] {
-record delete instance $I
-}
-% record show instances llist
-%
-
-}]
-
 [para]
 [section {See Also}]
 [cmd tdao], [cmd tdao::dbc] and [cmd struct::record]

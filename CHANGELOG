@@ -1,3 +1,7 @@
+2013-06-27
+Version 0.1.0
+  - documented tdao::dbc package
+
 2013-06-11
 Version 0.1.0
   - tdbo re-written using pure tcl (no oo extensions needed)

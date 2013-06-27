@@ -1,3 +1,8 @@
+As on 2013-06-27:
+1. Implement dao::delete and dao::exists methods 
+2. Add test cases
+3. Add support for more DBMS connectivity (Oracle, ODBC etc.) drivers.
+4. Port dbc package onto tdbc (for Tcl 8.6)
 
 As on 2013-06-11:
 1. Document tdao::dbc package

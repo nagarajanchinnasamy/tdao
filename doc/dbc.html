@@ -1,0 +1,272 @@
+
+<html><head>
+<title>tdao - Tcl Data Access Objects</title>
+<style type="text/css"><!--
+    HTML {
+	background: 	#FFFFFF;
+	color: 		black;
+    }
+    BODY {
+	background: 	#FFFFFF;
+	color:	 	black;
+    }
+    DIV.doctools {
+	margin-left:	10%;
+	margin-right:	10%;
+    }
+    DIV.doctools H1,DIV.doctools H2 {
+	margin-left:	-5%;
+    }
+    H1, H2, H3, H4 {
+	margin-top: 	1em;
+	font-family:	sans-serif;
+	font-size:	large;
+	color:		#005A9C;
+	background: 	transparent;
+	text-align:		left;
+    }
+    H1.title {
+	text-align: center;
+    }
+    UL,OL {
+	margin-right: 0em;
+	margin-top: 3pt;
+	margin-bottom: 3pt;
+    }
+    UL LI {
+	list-style: disc;
+    }
+    OL LI {
+	list-style: decimal;
+    }
+    DT {
+	padding-top: 	1ex;
+    }
+    UL.toc,UL.toc UL, UL.toc UL UL {
+	font:		normal 12pt/14pt sans-serif;
+	list-style:	none;
+    }
+    LI.section, LI.subsection {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding: 	0em;
+    }
+    PRE {
+	display: 	block;
+	font-family:	monospace;
+	white-space:	pre;
+	margin:		0%;
+	padding-top:	0.5ex;
+	padding-bottom:	0.5ex;
+	padding-left:	1ex;
+	padding-right:	1ex;
+	width:		100%;
+    }
+    PRE.example {
+	color: 		black;
+	background: 	#f5dcb3;
+	border:		1px solid black;
+    }
+    UL.requirements LI, UL.syntax LI {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding:	0em;
+    }
+    DIV.synopsis {
+	color: 		black;
+	background: 	#80ffff;
+	border:		1px solid black;
+	font-family:	serif;
+	margin-top: 	1em;
+	margin-bottom: 	1em;
+    }
+    UL.syntax {
+	margin-top: 	1em;
+	border-top:	1px solid black;
+    }
+    UL.requirements {
+	margin-bottom: 	1em;
+	border-bottom:	1px solid black;
+    }
+--></style>
+</head>
+<! -- Generated from file 'dbc.man' by tcllib/doctools with format 'html'
+   -->
+<! -- Copyright &copy; 2013, Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;
+   -->
+<! -- CVS: $Id$ tdao.n
+   -->
+<body><div class="doctools">
+<h1 class="title">tdao(n) 0.1.0  &quot;Tcl Data Access Objects&quot;</h1>
+<div id="name" class="section"><h2><a name="name">Name</a></h2>
+<p>tdao - Define and create Data Access Objects</p>
+</div>
+<div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
+<ul class="toc">
+<li class="section"><a href="#toc">Table Of Contents</a></li>
+<li class="section"><a href="#synopsis">Synopsis</a></li>
+<li class="section"><a href="#section1">Description</a></li>
+<li class="section"><a href="#section2">Loading Database Driver</a></li>
+<li class="section"><a href="#section3">Establishing Database Connection</a></li>
+<li class="section"><a href="#section4">Databse Connection Commands</a></li>
+<li class="section"><a href="#section5">See Also</a></li>
+<li class="section"><a href="#section6">AUTHOR</a></li>
+<li class="section"><a href="#section7">BUGS, IDEAS, FEEDBACK</a></li>
+<li class="section"><a href="#keywords">Keywords</a></li>
+<li class="section"><a href="#category">Category</a></li>
+<li class="section"><a href="#copyright">Copyright</a></li>
+</ul>
+</div>
+<div id="synopsis" class="section"><h2><a name="synopsis">Synopsis</a></h2>
+<div class="synopsis">
+<ul class="requirements">
+<li>package require <b class="pkgname">Tcl 8.5</b></li>
+<li>package require <b class="pkgname">tdao <span class="opt">?0.1.0?</span></b></li>
+</ul>
+<ul class="syntax">
+<li><a href="#1"><b class="cmd">dbc load</b> <i class="arg">driver</i> <span class="opt">?<i class="arg">driverVersion</i>?</span></a></li>
+<li><a href="#2"><i class="arg">driverInstance</i> <b class="method">open</b> <span class="opt">?<i class="arg">args</i>?</span></a></li>
+<li><a href="#3"><i class="arg">connectionHandle</i> <b class="method">close</b></a></li>
+<li><a href="#4"><i class="arg">connectionHandle</i> <b class="method">begin</b> <span class="opt">?<i class="arg">args</i>?</span></a></li>
+<li><a href="#5"><i class="arg">connectionHandle</i> <b class="method">rollback</b> <span class="opt">?<i class="arg">args</i>?</span></a></li>
+<li><a href="#6"><i class="arg">connectionHandle</i> <b class="method">commit</b> <span class="opt">?<i class="arg">args</i>?</span></a></li>
+</ul>
+</div>
+</div>
+<div id="section1" class="section"><h2><a name="section1">Description</a></h2>
+<p><b class="cmd">tdao::dbc</b> is a sub-package of <b class="cmd">tdao</b> package that provides
+methods to <b class="method">load</b> a database driver and <b class="method">open</b> a database
+connection. Using the connection handle returned by <b class="method">open</b>, one
+can invoke record manipulation methods, transaction handling methods
+and a method to <b class="method">close</b> the database connection. <b class="cmd">tdao::dbc</b>
+supports connectivity to <b class="const">sqlite</b>, <b class="const">postgres</b>,
+<b class="const">mariadb</b>/<b class="const">mysql</b> database drivers.</p>
+</div>
+<div id="section2" class="section"><h2><a name="section2">Loading Database Driver</a></h2>
+<dl class="definitions">
+<dt><a name="1"><b class="cmd">dbc load</b> <i class="arg">driver</i> <span class="opt">?<i class="arg">driverVersion</i>?</span></a></dt>
+<dd><p>Loads a database driver. <i class="arg">driver</i> is one of: <b class="const">sqlite</b>,
+<b class="const">postgres</b> and <b class="const">mariadb</b>. <span class="opt">?<i class="arg">driverVersion</i>?</span> is
+optional and indicates the package version of the database driver
+package. It returns an database driver instance command using which a
+connection can be established by invoking <b class="method">open</b> method.</p>
+<pre class="example">
+package require tdao
+namespace import -force tdao::dao::dao
+namespace import -force tdao::dbc::dbc
+set db [dbc load sqlite]
+</pre>
+</dd>
+</dl>
+</div>
+<div id="section3" class="section"><h2><a name="section3">Establishing Database Connection</a></h2>
+<dl class="definitions">
+<dt><a name="2"><i class="arg">driverInstance</i> <b class="method">open</b> <span class="opt">?<i class="arg">args</i>?</span></a></dt>
+<dd><p>Opens a connection to the database. <i class="arg">args</i> are database driver
+dependent parameters. For e.g., <b class="const">sqlite</b> driver expects
+<i class="arg">location</i> of the database file and an optional argument of
+<span class="opt">?<i class="arg">initscript</i>?</span> to be passed as parameters. It returns a
+connection handle command that is passed as a parameter whenever a
+DAO instance is created. A DAO instance makes use of this connection
+handle to interface with the database driver. Also, connection handle
+command is used to invoke database transaction methods <b class="method">begin</b>,
+<b class="method">rollback</b> and <b class="method">commit</b> and the method to <b class="method">close</b>
+the connection.</p>
+<pre class="example">
+package require tdao
+namespace import -force tdao::dao::dao
+namespace import -force tdao::dbc::dbc
+set db [dbc load sqlite]
+set conn [$db open [file normalize &quot;sqlite/example.db&quot;]]
+HardDisk hd1 $conn -name &quot;harddrive&quot; -modelno &quot;hd0001&quot; -serialno &quot;INB100001&quot; -description &quot;blah blah&quot; -capacity 500 -rpm 7200
+</pre>
+</dd>
+</dl>
+</div>
+<div id="section4" class="section"><h2><a name="section4">Databse Connection Commands</a></h2>
+<dl class="definitions">
+<dt><a name="3"><i class="arg">connectionHandle</i> <b class="method">close</b></a></dt>
+<dd><p>Closes the database connection. One must ensure that DAO instances that
+are using this connection handle are deleted before closing the
+connection. After closing the connection, trying to use DAO instances
+that are passed with this connection handle may result in undesired
+behavior that are not checked by this package.</p>
+<pre class="example">
+package require tdao
+namespace import -force tdao::dao::dao
+namespace import -force tdao::dbc::dbc
+set db [dbc load sqlite]
+set conn [$db open [file normalize &quot;sqlite/example.db&quot;]]
+HardDisk hd1 $conn -name &quot;harddrive&quot; -modelno &quot;hd0001&quot; -serialno &quot;INB100001&quot; -description &quot;blah blah&quot; -capacity 500 -rpm 7200
+# ... use hd1 DAO instance commands
+dao delete object hd1
+$conn close
+</pre>
+</dd>
+<dt><a name="4"><i class="arg">connectionHandle</i> <b class="method">begin</b> <span class="opt">?<i class="arg">args</i>?</span></a></dt>
+<dd><p>Begin a database transaction.</p></dd>
+<dt><a name="5"><i class="arg">connectionHandle</i> <b class="method">rollback</b> <span class="opt">?<i class="arg">args</i>?</span></a></dt>
+<dd><p>Rollback (undo) changes made in the currently active transaction.</p></dd>
+<dt><a name="6"><i class="arg">connectionHandle</i> <b class="method">commit</b> <span class="opt">?<i class="arg">args</i>?</span></a></dt>
+<dd><p>Commit (save) changes made in the currently active transaction.</p>
+<pre class="example">
+proc save_harddisk {conn op harddisk} {
+  set part [Part #auto $conn {*}[$harddisk cget dict -id -name -modelno -serialno -description]]
+  $conn begin
+    switch $op {
+      add {
+        if {[catch {$part add} err]} {
+          $conn rollback
+          return -code error $err
+        }
+        $harddisk configure -part_id [$part cget -id]
+        if {[catch {$harddisk add part_id capacity rpm} err]} {
+          $conn rollback
+          return -code error $err
+        }
+      }
+      update {
+        if {[catch {$part save} err]} {
+          $conn rollback
+          return -code error $err
+        }
+        if {[catch {$harddisk save part_id capacity rpm} err]} {
+          $conn rollback
+          return -code error $err
+        }          
+      }
+    }
+  $conn commit
+  dao delete object part
+  return 1
+}
+</pre>
+</dd>
+</dl>
+</div>
+<div id="section5" class="section"><h2><a name="section5">See Also</a></h2>
+<p><b class="cmd">tdao</b>, <b class="cmd">tdao::dao</b> and <b class="cmd">struct::record</b></p>
+</div>
+<div id="section6" class="section"><h2><a name="section6">AUTHOR</a></h2>
+<p>Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;</p>
+</div>
+<div id="section7" class="section"><h2><a name="section7">BUGS, IDEAS, FEEDBACK</a></h2>
+<p>This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such in the category <em>tdao :: dao</em> of the
+<a href="http://sourceforge.net/tracker/?group_id=12883">Tcllib SF Trackers</a>.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.</p>
+</div>
+<div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
+<p>DAO, Data Access Objects, Database Connectivity</p>
+</div>
+<div id="category" class="section"><h2><a name="category">Category</a></h2>
+<p>Database</p>
+</div>
+<div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
+<p>Copyright &copy; 2013, Nagarajan Chinnasamy &lt;nagarajanchinnasamy@gmail.com&gt;</p>
+</div>
+</div></body></html>

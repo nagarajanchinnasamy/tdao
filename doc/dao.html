@@ -142,7 +142,7 @@
 <li><a href="#13"><i class="arg">instanceName</i> <b class="method">reset</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
 <li><a href="#14"><i class="arg">instanceName</i> <b class="method">add</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
 <li><a href="#15"><i class="arg">instanceName</i> <b class="method">get</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
-<li><a href="#16"><i class="arg">instanceName</i> <b class="method">save</b></a></li>
+<li><a href="#16"><i class="arg">instanceName</i> <b class="method">save</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></li>
 <li><a href="#17"><i class="arg">instanceName</i> <b class="method">delete</b></a></li>
 </ul>
 </div>
@@ -345,7 +345,7 @@ arguments.</p>
 <p>Returns fieldname-value pairs retrieved from database as a Tcl 
 dictionary. If the retrieval does not return any record from database,
 then the result will be an empty string.</p></dd>
-<dt><a name="16"><i class="arg">instanceName</i> <b class="method">save</b></a></dt>
+<dt><a name="16"><i class="arg">instanceName</i> <b class="method">save</b> <span class="opt">?<i class="arg">-field1</i>?</span> <span class="opt">?<i class="arg">-field2</i>?</span> <span class="opt">?<i class="arg">...</i>?</span></a></dt>
 <dd><p>Each instance has the sub command <b class="method">save</b> associated with it. It
 saves the object by updating the corresponding record into the
 database. The process of preparing the condition needed to identify the
@@ -441,37 +441,6 @@ this package.</p>
 % # copy one DAO definition to another
 % dao define Address2 address2 [dao show members Address]
 ::Address2
-</pre>
-<p><em>Example 1</em></p>
-<p>This next example a complete working code to store</p>
-<pre class="example">
-% # define a very simple record for linked list
-% record define llist {
-    value
-    next
-}
-::llist
-% llist lstart
-::lstart
-% lstart config -value 1 -next [llist #auto]
-% [lstart cget -next] config -value 2 -next [llist #auto]
-% [[lstart cget -next] cget -next] config -value 3 -next &quot;end&quot;
-% set next lstart
-lstart
-% while 1 {
-lappend values [$next cget -value]
-set next [$next cget -next]
-if {[string match &quot;end&quot; $next]} {break}
-}
-% puts &quot;$values&quot;
-1 2 3
-% # cleanup linked list
-% # We could just use delete record llist also
-% foreach I [record show instances llist] {
-record delete instance $I
-}
-% record show instances llist
-%
 </pre>
 </div>
 <div id="section6" class="section"><h2><a name="section6">See Also</a></h2>

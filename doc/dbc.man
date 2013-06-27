@@ -1,0 +1,178 @@
+[comment {-*- tcl -*-}]
+[manpage_begin tdao n 0.1.0]
+[copyright {2013, Nagarajan Chinnasamy <nagarajanchinnasamy@gmail.com>}]
+[moddesc   {Tcl Data Access Objects}]
+[titledesc {Define and create Data Access Objects}]
+[category  {Database}]
+[require Tcl 8.5]
+[require tdao [opt 0.1.0]]
+[description]
+
+[para]
+[cmd tdao::dbc] is a sub-package of [cmd tdao] package that provides
+methods to [method load] a database driver and [method open] a database
+connection. Using the connection handle returned by [method open], one
+can invoke record manipulation methods, transaction handling methods
+and a method to [method close] the database connection. [cmd tdao::dbc]
+supports connectivity to [const sqlite], [const postgres],
+[const mariadb]/[const mysql] database drivers.
+
+[section {Loading Database Driver}]
+[para]
+
+[list_begin definitions]
+
+[call [cmd {dbc load}] [arg driver] [opt [arg driverVersion]]]
+
+Loads a database driver. [arg driver] is one of: [const sqlite],
+[const postgres] and [const mariadb]. [opt [arg driverVersion]] is
+optional and indicates the package version of the database driver
+package. It returns an database driver instance command using which a
+connection can be established by invoking [method open] method.
+
+[example {
+
+package require tdao
+namespace import -force tdao::dao::dao
+namespace import -force tdao::dbc::dbc
+
+set db [dbc load sqlite]
+
+}]
+[list_end]
+[section {Establishing Database Connection}]
+[para]
+
+[list_begin definitions]
+
+[call [arg driverInstance] [method open] [opt [arg args]]]
+
+Opens a connection to the database. [arg args] are database driver
+dependent parameters. For e.g., [const sqlite] driver expects
+[arg location] of the database file and an optional argument of
+[opt [arg initscript]] to be passed as parameters. It returns a
+connection handle command that is passed as a parameter whenever a
+DAO instance is created. A DAO instance makes use of this connection
+handle to interface with the database driver. Also, connection handle
+command is used to invoke database transaction methods [method begin],
+[method rollback] and [method commit] and the method to [method close]
+the connection.
+
+[example {
+
+package require tdao
+namespace import -force tdao::dao::dao
+namespace import -force tdao::dbc::dbc
+
+set db [dbc load sqlite]
+set conn [$db open [file normalize "sqlite/example.db"]]
+
+HardDisk hd1 $conn -name "harddrive" -modelno "hd0001" -serialno "INB100001" -description "blah blah" -capacity 500 -rpm 7200
+
+}]
+
+[list_end]
+
+[para]
+[section {Databse Connection Commands}]
+
+[list_begin definitions]
+
+[call [arg connectionHandle] [method close]]
+
+Closes the database connection. One must ensure that DAO instances that
+are using this connection handle are deleted before closing the
+connection. After closing the connection, trying to use DAO instances
+that are passed with this connection handle may result in undesired
+behavior that are not checked by this package.
+
+[example {
+
+package require tdao
+namespace import -force tdao::dao::dao
+namespace import -force tdao::dbc::dbc
+
+set db [dbc load sqlite]
+set conn [$db open [file normalize "sqlite/example.db"]]
+
+HardDisk hd1 $conn -name "harddrive" -modelno "hd0001" -serialno "INB100001" -description "blah blah" -capacity 500 -rpm 7200
+
+# ... use hd1 DAO instance commands
+
+dao delete object hd1
+$conn close
+
+}]
+
+[para]
+[call [arg connectionHandle] [method begin] [opt [arg args]]]
+
+Begin a database transaction.
+
+[para]
+[call [arg connectionHandle] [method rollback] [opt [arg args]]]
+
+Rollback (undo) changes made in the currently active transaction.
+
+[para]
+[call [arg connectionHandle] [method commit] [opt [arg args]]]
+
+Commit (save) changes made in the currently active transaction.
+
+[example {
+proc save_harddisk {conn op harddisk} {
+  set part [Part #auto $conn {*}[$harddisk cget dict -id -name -modelno -serialno -description]]
+
+  $conn begin
+    switch $op {
+      add {
+        if {[catch {$part add} err]} {
+          $conn rollback
+          return -code error $err
+        }
+        $harddisk configure -part_id [$part cget -id]
+        if {[catch {$harddisk add part_id capacity rpm} err]} {
+          $conn rollback
+          return -code error $err
+        }
+      }
+      update {
+        if {[catch {$part save} err]} {
+          $conn rollback
+          return -code error $err
+        }
+        if {[catch {$harddisk save part_id capacity rpm} err]} {
+          $conn rollback
+          return -code error $err
+        }          
+      }
+    }
+  $conn commit
+  dao delete object part
+  return 1
+}
+}]
+
+[list_end]
+
+[para]
+[section {See Also}]
+[cmd tdao], [cmd tdao::dao] and [cmd struct::record]
+[para]
+[keywords DAO {Data Access Objects} {Database Connectivity}]
+[para]
+[section {AUTHOR}]
+
+Nagarajan Chinnasamy <nagarajanchinnasamy@gmail.com>
+
+[section {BUGS, IDEAS, FEEDBACK}]
+
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+
+Please report such in the category [emph {tdao :: dao}] of the
+[uri {http://sourceforge.net/tracker/?group_id=12883} {Tcllib SF Trackers}].
+
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+[manpage_end]
